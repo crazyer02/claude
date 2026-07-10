@@ -6,6 +6,7 @@ const app = getApp();
 
 Page({
   data: {
+    fontSizeMode: 'large',
     userType: 'elderly', // 'elderly' | 'family'
     bindedElderly: [],
     familyMembers: [],
@@ -25,6 +26,7 @@ Page({
   },
 
   onShow() {
+    this.setData({ fontSizeMode: app.globalData.fontSizeMode || 'large' });
     this.loadData();
   },
 

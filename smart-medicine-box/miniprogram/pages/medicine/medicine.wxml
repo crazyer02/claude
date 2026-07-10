@@ -1,7 +1,7 @@
 <!--
   我的药品 - 药品列表管理
 -->
-<view class="page-container">
+<view class="page-container font-{{fontSizeMode}}">
 
   <!-- 库存不足提醒 -->
   <view class="alert-banner" wx:if="{{showLowStockAlert}}">
@@ -38,9 +38,11 @@
 
       <!-- 药品信息 -->
       <view class="medicine-info">
-        <text class="medicine-name">{{item.name}}</text>
+        <view class="medicine-name-row">
+          <text class="medicine-name">{{item.name}}</text>
+          <text class="medicine-dosage">{{item.dosage}}/次</text>
+        </view>
         <text class="medicine-spec" wx:if="{{item.specification}}">{{item.specification}}</text>
-        <text class="medicine-dosage">{{item.dosage}}/次</text>
         <text class="medicine-position" wx:if="{{item.box_position}}">📍 {{item.box_position}}号仓</text>
       </view>
 

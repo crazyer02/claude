@@ -4,7 +4,7 @@
 import sqlite3
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
-from app.database import get_db
+from app.dependencies import get_db
 from app.schemas.medicine import (
     MedicineCreate, MedicineUpdate, MedicineResponse, MedicineListResponse,
     ScheduleCreate, ScheduleUpdate, ScheduleResponse,
@@ -38,6 +38,19 @@ async def get_medicines(
 ):
     """获取当前用户的所有药品"""
     medicines = MedicineService.get_medicines(conn, current_user["id"], is_active)
+    return MedicineListResponse(
+        total=len(medicines),
+        items=[MedicineResponse(**m) for m in medicines],
+    )
+
+
+@router.get("/medicines/low-stock", response_model=MedicineListResponse, summary="库存不足药品")
+async def get_low_stock(
+    current_user: dict = Depends(get_current_user),
+    conn: sqlite3.Connection = Depends(get_db),
+):
+    """获取库存低于告警阈值的药品列表"""
+    medicines = MedicineService.get_low_stock_medicines(conn, current_user["id"])
     return MedicineListResponse(
         total=len(medicines),
         items=[MedicineResponse(**m) for m in medicines],
@@ -86,18 +99,6 @@ async def delete_medicine(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-
-@router.get("/medicines/low-stock", response_model=MedicineListResponse, summary="库存不足药品")
-async def get_low_stock(
-    current_user: dict = Depends(get_current_user),
-    conn: sqlite3.Connection = Depends(get_db),
-):
-    """获取库存低于告警阈值的药品列表"""
-    medicines = MedicineService.get_low_stock_medicines(conn, current_user["id"])
-    return MedicineListResponse(
-        total=len(medicines),
-        items=[MedicineResponse(**m) for m in medicines],
-    )
 
 
 # ==================== 用药计划 ====================

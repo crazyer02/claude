@@ -4,12 +4,14 @@
  */
 const { recordApi } = require('../../utils/api');
 const { getPeriodIcon, getPeriodLabel, getStatusConfig, getTodayStr, speakText } = require('../../utils/util');
+const app = getApp();
 
 Page({
   data: {
     // 日期
     today: '',
     weekday: '',
+    nickname: '',
     greeting: '',
 
     // 用药概览
@@ -25,6 +27,8 @@ Page({
     // 即将提醒的药品
     upcomingMedicines: [],
 
+    // 字体
+    fontSizeMode: 'large',
     // 状态
     loading: false,
     refreshing: false,
@@ -46,6 +50,12 @@ Page({
   },
 
   onShow() {
+    const user = app.globalData.userInfo || {};
+    this.setData({
+      fontSizeMode: app.globalData.fontSizeMode || 'large',
+      nickname: user.nickname || '',
+    });
+    this.updateTimeAndGreeting();
     this.loadTodayOverview();
   },
 
@@ -114,10 +124,14 @@ Page({
     const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
     const weekday = `星期${weekdays[now.getDay()]}`;
 
+    // 如果有昵称，加在问候语前面
+    const nickname = this.data.nickname || wx.getStorageSync('userInfo')?.nickname || '';
+    const displayGreeting = nickname ? `${nickname}，${greeting}` : greeting;
+
     this.setData({
       currentTime: timeStr,
       weekday,
-      greeting,
+      greeting: displayGreeting,
       today: getTodayStr(),
     });
   },
@@ -126,11 +140,14 @@ Page({
    * 点击「我已服药」按钮
    */
   onTakeMedicine(e) {
-    const item = e.currentTarget.dataset.item;
-    this.setData({
-      showTakePopup: true,
-      selectedMedicine: item,
-    });
+    const sid = parseInt(e.currentTarget.dataset.id);
+    const item = this.data.overview.schedules.find(s => s.schedule_id === sid);
+    if (item) {
+      this.setData({
+        showTakePopup: true,
+        selectedMedicine: item,
+      });
+    }
   },
 
   /**
@@ -144,21 +161,55 @@ Page({
       const now = new Date();
       const scheduledTime = `${this.data.today}T${item.reminder_time}:00`;
 
-      await recordApi.create({
+      // 乐观更新：深拷贝避免 setData 引用相同跳过渲染
+      const oldOverview = this.data.overview;
+      const schedules = oldOverview.schedules.map(s => {
+        if (s.schedule_id === item.schedule_id) {
+          return { ...s, status: 'taken' };
+        }
+        return { ...s };
+      });
+      const taken_count = schedules.filter(s => s.status === 'taken').length;
+      const pending_count = schedules.filter(s => s.status === 'pending').length;
+      const missed_count = schedules.filter(s => s.status === 'missed').length;
+      const adherence_rate = oldOverview.total_count > 0
+        ? Math.round(taken_count / oldOverview.total_count * 100 * 10) / 10
+        : 0;
+
+      this.setData({
+        overview: {
+          ...oldOverview,
+          schedules,
+          taken_count,
+          pending_count,
+          missed_count,
+          adherence_rate,
+        },
+        showTakePopup: false,
+        selectedMedicine: null,
+      });
+
+      console.log('Creating record for schedule', item.schedule_id, 'medicine', item.medicine_id);
+      const recordResult = await recordApi.create({
         schedule_id: item.schedule_id,
         medicine_id: item.medicine_id,
         scheduled_time: scheduledTime,
         actual_time: now.toISOString(),
         status: 'taken',
       });
+      console.log('Record created:', recordResult);
 
-      wx.showToast({ title: '✅ 已记录服药', icon: 'none', duration: 2000 });
-      this.setData({ showTakePopup: false, selectedMedicine: null });
+      wx.showToast({ title: '已记录', icon: 'success', duration: 1500 });
 
-      // 刷新概览
-      setTimeout(() => this.loadTodayOverview(), 500);
+      // 服务器刷新确保数据一致
+      setTimeout(() => {
+        console.log('Refreshing today overview...');
+        this.loadTodayOverview();
+      }, 500);
     } catch (err) {
       console.error('记录失败:', err);
+      wx.showToast({ title: '记录失败: ' + (err.detail || '网络错误'), icon: 'none', duration: 3000 });
+      this.loadTodayOverview();  // 失败时还原
     }
   },
 
@@ -191,6 +242,14 @@ Page({
    */
   closePopup() {
     this.setData({ showTakePopup: false, selectedMedicine: null });
+  },
+
+  /**
+   * 点击药品名跳转详情
+   */
+  goMedicineDetail(e) {
+    const mid = e.currentTarget.dataset.mid;
+    wx.navigateTo({ url: `/pages/medicine/add/add?id=${mid}&readonly=1` });
   },
 
   /**

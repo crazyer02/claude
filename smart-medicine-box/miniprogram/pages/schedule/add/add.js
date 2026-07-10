@@ -1,10 +1,12 @@
 /**
  * 添加/编辑用药计划
  */
+const app = getApp();
 const { scheduleApi, medicineApi } = require('../../../utils/api');
 
 Page({
   data: {
+    fontSizeMode: 'large',
     isEdit: false,
     scheduleId: null,
     medicines: [],
@@ -47,21 +49,33 @@ Page({
     if (options.medicine_id) {
       this.setData({ 'form.medicine_id': parseInt(options.medicine_id) });
     }
+  },
+
+  onShow() {
+    this.setData({ fontSizeMode: app.globalData.fontSizeMode || 'large' });
     this.loadMedicines();
+  },
+
+  goAddMedicine() {
+    wx.navigateTo({ url: '/pages/medicine/add/add' });
   },
 
   async loadMedicines() {
     try {
       const res = await medicineApi.getList(true);
-      this.setData({ medicines: res.items || [] });
+      const medicines = res.items || [];
+      console.log('加载药品列表:', medicines.length, '个');
+      this.setData({ medicines });
     } catch (err) {
       console.error('加载药品列表失败:', err);
+      wx.showToast({ title: '加载药品失败，请返回重试', icon: 'none' });
     }
   },
 
   onSelectMedicine(e) {
-    const id = e.currentTarget.dataset.id;
+    const id = parseInt(e.currentTarget.dataset.id);
     const name = e.currentTarget.dataset.name;
+    console.log('选择药品:', id, name);
     this.setData({
       'form.medicine_id': id,
       'form.medicine_name': name,

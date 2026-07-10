@@ -69,13 +69,17 @@ class MedicineService:
         if not update_data:
             return MedicineService.get_medicine(conn, medicine_id, user_id)
 
-        # 库存联动调整
+        # 库存联动调整：更新 total_stock 时，同比例调整 remaining_stock
         if "total_stock" in update_data:
             old = MedicineService.get_medicine(conn, medicine_id, user_id)
-            ratio = update_data["total_stock"] / old["total_stock"] if old["total_stock"] > 0 else 0
-            if ratio > 0:
-                new_remaining = int(old["remaining_stock"] * ratio)
-                conn.execute("UPDATE medicines SET remaining_stock = ? WHERE id = ?", (new_remaining, medicine_id))
+            new_total = update_data["total_stock"]
+            if old["total_stock"] > 0:
+                # 同比例缩放 remaining
+                new_remaining = max(0, int(old["remaining_stock"] * new_total / old["total_stock"]))
+            else:
+                # 旧库存为 0，remaining 直接跟随 total
+                new_remaining = new_total
+            conn.execute("UPDATE medicines SET remaining_stock = ? WHERE id = ?", (new_remaining, medicine_id))
 
         fields = ", ".join(f"{k} = ?" for k in update_data.keys())
         values = list(update_data.values()) + [medicine_id]
@@ -184,14 +188,18 @@ class MedicineService:
         MedicineService.get_medicine(conn, data_dict["medicine_id"], user_id)
 
         status = data_dict.get("status", "taken")
-        actual_time = data_dict.get("actual_time") or (datetime.utcnow().isoformat() if status == "taken" else None)
+        actual_time = data_dict.get("actual_time") or (datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") if status == "taken" else None)
+        # 统一用空格格式，与 get_today_overview 的查询格式一致
+        sched_time = data_dict["scheduled_time"]
+        if hasattr(sched_time, 'strftime'):
+            sched_time = sched_time.strftime("%Y-%m-%d %H:%M:%S")
 
         cursor = conn.execute("""
             INSERT INTO medicine_records (schedule_id, medicine_id, user_id, scheduled_time, actual_time, status, notes)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             data_dict.get("schedule_id"), data_dict["medicine_id"], user_id,
-            data_dict["scheduled_time"], actual_time, status, data_dict.get("notes"),
+            sched_time, actual_time, status, data_dict.get("notes"),
         ))
 
         # 如果已服用，自动减库存
@@ -272,7 +280,7 @@ class MedicineService:
             if s["end_date"] and s["end_date"] < today_str:
                 continue
 
-            scheduled_datetime = f"{today_str}T{s['reminder_time']}:00"
+            scheduled_datetime = f"{today_str} {s['reminder_time']}:00"
 
             # 查找今天的记录
             cursor = conn.execute(

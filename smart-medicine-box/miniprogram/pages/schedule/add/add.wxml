@@ -1,5 +1,5 @@
 <!-- 添加/编辑用药计划 -->
-<view class="page-container">
+<view class="page-container font-{{fontSizeMode}}">
 
   <view class="card">
     <view class="card-title">{{isEdit ? '编辑用药计划' : '添加用药计划'}}</view>
@@ -7,7 +7,15 @@
     <!-- 选择药品 -->
     <view class="form-group">
       <text class="form-label">选择药品 <text class="required">*</text></text>
-      <view class="medicine-selector">
+
+      <!-- 空状态 -->
+      <view wx:if="{{medicines.length === 0}}" class="empty-hint">
+        <text>还没有药品，请先去「我的药品」添加</text>
+        <view class="link-btn" bindtap="goAddMedicine">前往添加药品 →</view>
+      </view>
+
+      <!-- 药品列表 -->
+      <view class="medicine-selector" wx:if="{{medicines.length > 0}}">
         <view
           class="medicine-option {{form.medicine_id === item.id ? 'active' : ''}}"
           wx:for="{{medicines}}"

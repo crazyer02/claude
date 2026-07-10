@@ -2,7 +2,7 @@
   首页 - 今日用药概览
   设计重点：大字体、清晰卡片、一键操作
 -->
-<view class="page-container">
+<view class="page-container font-{{fontSizeMode}}">
 
   <!-- ===== 顶部问候区 ===== -->
   <view class="header-section">
@@ -74,7 +74,7 @@
 
         <!-- 中间：药品信息 -->
         <view class="item-info">
-          <text class="item-name">{{item.medicine_name}}</text>
+          <text class="item-name" data-mid="{{item.medicine_id}}" bindtap="goMedicineDetail">{{item.medicine_name}}</text>
           <text class="item-dosage">{{item.dosage_at_time}} · {{item.time_label}}</text>
           <text class="item-position" wx:if="{{item.box_position}}">📍 {{item.box_position}}号仓</text>
         </view>
@@ -85,7 +85,7 @@
           <view
             wx:if="{{item.status === 'pending'}}"
             class="btn-take"
-            data-item="{{item}}"
+            data-id="{{item.schedule_id}}"
             bindtap="onTakeMedicine"
           >
             <text class="btn-take-text">我吃了</text>

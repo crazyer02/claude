@@ -11,7 +11,7 @@ class ReminderService:
     """用药提醒服务"""
 
     @staticmethod
-    async def check_and_create_reminders():
+    def check_and_create_reminders():
         """定时任务：检查当前时间需要提醒的用药计划"""
         conn = get_connection()
         try:

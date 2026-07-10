@@ -55,6 +55,34 @@ page {
   line-height: 1.6;
 }
 
+/* ==================== 字体大小模式 ==================== */
+.font-large {
+  --font-xs: 26rpx;
+  --font-sm: 30rpx;
+  --font-md: 36rpx;
+  --font-lg: 42rpx;
+  --font-xl: 50rpx;
+  --font-xxl: 60rpx;
+}
+
+.font-xlarge {
+  --font-xs: 32rpx;
+  --font-sm: 36rpx;
+  --font-md: 44rpx;
+  --font-lg: 52rpx;
+  --font-xl: 62rpx;
+  --font-xxl: 74rpx;
+}
+
+.font-normal {
+  --font-xs: 22rpx;
+  --font-sm: 26rpx;
+  --font-md: 30rpx;
+  --font-lg: 36rpx;
+  --font-xl: 42rpx;
+  --font-xxl: 52rpx;
+}
+
 /* ==================== 通用布局 ==================== */
 .page-container {
   min-height: 100vh;

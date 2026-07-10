@@ -3,6 +3,7 @@
  */
 const { scheduleApi } = require('../../utils/api');
 const { showConfirm } = require('../../utils/util');
+const app = getApp();
 
 // 时段配置
 const PERIOD_CONFIG = {
@@ -14,6 +15,7 @@ const PERIOD_CONFIG = {
 
 Page({
   data: {
+    fontSizeMode: 'large',
     medicineId: null,
     schedules: [],
     // 按时间段分组后的数据
@@ -28,6 +30,7 @@ Page({
   },
 
   onShow() {
+    this.setData({ fontSizeMode: app.globalData.fontSizeMode || 'large' });
     this.loadSchedules();
   },
 

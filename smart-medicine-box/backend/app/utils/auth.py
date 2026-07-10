@@ -10,7 +10,8 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from app.config import settings
-from app.database import get_db, row_to_dict
+from app.dependencies import get_db
+from app.database import row_to_dict
 
 security = HTTPBearer()
 

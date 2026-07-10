@@ -3,9 +3,11 @@
  */
 const { medicineApi } = require('../../utils/api');
 const { showConfirm } = require('../../utils/util');
+const app = getApp();
 
 Page({
   data: {
+    fontSizeMode: 'large',
     medicines: [],
     lowStockMedicines: [],
     loading: false,
@@ -13,6 +15,7 @@ Page({
   },
 
   onShow() {
+    this.setData({ fontSizeMode: app.globalData.fontSizeMode || 'large' });
     this.loadMedicines();
   },
 

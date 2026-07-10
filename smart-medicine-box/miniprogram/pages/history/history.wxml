@@ -1,5 +1,5 @@
 <!-- 用药记录 -->
-<view class="page-container">
+<view class="page-container font-{{fontSizeMode}}">
 
   <!-- 日期导航 -->
   <view class="date-nav">
@@ -33,18 +33,22 @@
   </view>
 
   <view class="record-list">
-    <view class="record-item" wx:for="{{records}}" wx:key="id">
-      <view class="record-left">
+    <view class="record-item {{item.status}}" wx:for="{{records}}" wx:key="id">
+      <!-- 药品名 + 用量 -->
+      <view class="record-name-row">
         <text class="record-medicine">{{item.medicine_name}}</text>
         <text class="record-dosage">{{item.medicine_dosage}}</text>
-        <text class="record-time">计划: {{item.scheduled_time}}</text>
-        <text class="record-actual" wx:if="{{item.actual_time}}">实际: {{item.actual_time}}</text>
       </view>
-      <view class="record-right">
-        <view class="status-tag {{item.status}}">
-          <text wx:if="{{item.status === 'taken'}}">✅ 已服用</text>
-          <text wx:elif="{{item.status === 'missed'}}">❌ 未服用</text>
-          <text wx:else>⏭️ 已跳过</text>
+      <!-- 时间明细：计划和实际分两行 -->
+      <view class="record-times">
+        <text class="record-time">计划 {{item.scheduled_time}}</text>
+        <view class="record-actual-row">
+          <text class="record-actual" wx:if="{{item.actual_time}}">实际 {{item.actual_time}}</text>
+          <text class="status-tag {{item.status}}">
+            <text wx:if="{{item.status === 'taken'}}">已服用</text>
+            <text wx:elif="{{item.status === 'missed'}}">未服用</text>
+            <text wx:else>已跳过</text>
+          </text>
         </view>
       </view>
     </view>

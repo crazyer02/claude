@@ -58,55 +58,81 @@
 /* 记录列表 */
 .record-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   background: var(--bg-card);
   border-radius: var(--radius-md);
   padding: var(--space-lg);
   margin-bottom: var(--space-sm);
   box-shadow: var(--shadow-card);
+  border-left: 8rpx solid var(--border);
 }
 
-.record-left {
-  flex: 1;
+.record-item.taken {
+  border-left-color: var(--success);
+}
+
+.record-item.missed {
+  border-left-color: var(--danger);
+}
+
+.record-item.skipped {
+  border-left-color: var(--warning);
+}
+
+/* 药名行：左边药名，右边用量 */
+.record-name-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: var(--space-sm);
 }
 
 .record-medicine {
-  font-size: var(--font-lg);
+  font-size: var(--font-xl);
   font-weight: 700;
   color: var(--text-primary);
-  display: block;
 }
 
 .record-dosage {
-  font-size: var(--font-md);
-  color: var(--text-secondary);
-  display: block;
-  margin-top: 4rpx;
+  font-size: var(--font-lg);
+  color: var(--primary);
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: 20rpx;
+}
+
+/* 时间明细：计划和实际分两行 */
+.record-times {
+  width: 100%;
 }
 
 .record-time {
-  font-size: var(--font-sm);
-  color: var(--text-hint);
-  margin-top: 4rpx;
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  display: block;
+  line-height: 1.8;
+}
+
+.record-actual-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .record-actual {
-  font-size: var(--font-sm);
+  font-size: var(--font-md);
   color: var(--warning);
-  margin-top: 2rpx;
+  font-weight: 500;
 }
 
-.record-right {
-  min-width: 130rpx;
-  text-align: right;
-}
-
+/* 状态标签 */
 .status-tag {
   font-size: var(--font-sm);
-  padding: var(--space-xs) var(--space-sm);
+  padding: 4rpx var(--space-md);
   border-radius: var(--radius-round);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .status-tag.taken {

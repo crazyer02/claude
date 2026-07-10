@@ -6,32 +6,28 @@ import os
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "smart_medicine_box.db")
 
-# 线程本地存储，每个请求独立的连接
-import threading
-_local = threading.local()
-
 
 def get_connection():
     """获取数据库连接"""
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA journal_mode=DELETE")
     conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=5000")
     return conn
 
 
-def get_db():
-    """获取当前请求的数据库连接（由中间件注入到 _local.conn）"""
-    if not hasattr(_local, 'conn') or _local.conn is None:
-        _local.conn = get_connection()
-    return _local.conn
-
-
-def close_db():
-    """关闭当前请求的数据库连接"""
-    if hasattr(_local, 'conn') and _local.conn is not None:
-        _local.conn.close()
-        _local.conn = None
+def get_db(request=None):
+    """
+    获取当前请求的数据库连接。
+    通过 FastAPI 的 Request.state 存储，确保同一请求共用一个连接。
+    """
+    from fastapi import Request
+    if request is None:
+        return get_connection()
+    if not hasattr(request.state, 'db_conn'):
+        request.state.db_conn = get_connection()
+    return request.state.db_conn
 
 
 def init_db():
@@ -40,7 +36,6 @@ def init_db():
     cursor = conn.cursor()
 
     cursor.executescript("""
-        -- 用户表
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             openid TEXT UNIQUE NOT NULL,

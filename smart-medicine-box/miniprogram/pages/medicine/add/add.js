@@ -2,10 +2,13 @@
  * 添加/编辑药品页
  */
 const { medicineApi } = require('../../../utils/api');
+const app = getApp();
 
 Page({
   data: {
+    fontSizeMode: 'large',
     isEdit: false,
+    readonly: false,
     medicineId: null,
     form: {
       name: '',
@@ -30,11 +33,20 @@ Page({
     submitting: false,
   },
 
+  onShow() {
+    this.setData({ fontSizeMode: app.globalData.fontSizeMode || 'large' });
+  },
+
   onLoad(options) {
     if (options.id) {
-      this.setData({ isEdit: true, medicineId: parseInt(options.id) });
+      const readonly = options.readonly === '1';
+      this.setData({
+        readonly,
+        isEdit: !readonly,
+        medicineId: parseInt(options.id),
+      });
       this.loadMedicine(options.id);
-      wx.setNavigationBarTitle({ title: '编辑药品' });
+      wx.setNavigationBarTitle({ title: readonly ? '药品详情' : '编辑药品' });
     }
   },
 
@@ -61,39 +73,33 @@ Page({
     }
   },
 
-  // 输入框事件
   onInput(e) {
     const field = e.currentTarget.dataset.field;
     const value = e.detail.value;
     this.setData({ [`form.${field}`]: value });
   },
 
-  // 数字输入
   onNumberInput(e) {
     const field = e.currentTarget.dataset.field;
     const value = parseInt(e.detail.value) || 0;
     this.setData({ [`form.${field}`]: value });
   },
 
-  // 选择频率
   onSelectFrequency(e) {
     const value = e.currentTarget.dataset.value;
     this.setData({ 'form.frequency': value });
   },
 
-  // 选择单位
   onSelectUnit(e) {
     const value = e.currentTarget.dataset.value;
     this.setData({ 'form.unit': value });
   },
 
-  // 选择日期
   onDateChange(e) {
     const field = e.currentTarget.dataset.field;
     this.setData({ [`form.${field}`]: e.detail.value });
   },
 
-  // 选择药箱仓位
   onSelectPosition(e) {
     const positions = [];
     for (let i = 1; i <= 8; i++) positions.push(`${i}`);
@@ -105,11 +111,24 @@ Page({
     });
   },
 
-  // 提交表单
+  // 清理空值，避免空字符串导致 Pydantic 422 校验失败
+  cleanForm(data) {
+    const cleaned = {};
+    Object.keys(data).forEach((key) => {
+      const val = data[key];
+      if (val !== '' && val !== null && val !== undefined) {
+        cleaned[key] = val;
+      }
+    });
+    // 确保必填字段存在
+    cleaned.name = (data.name || '').trim();
+    cleaned.dosage = (data.dosage || '').trim();
+    return cleaned;
+  },
+
   async onSubmit() {
     const form = this.data.form;
 
-    // 验证必填项
     if (!form.name.trim()) {
       wx.showToast({ title: '请输入药品名称', icon: 'none' });
       return;
@@ -120,14 +139,15 @@ Page({
     }
 
     this.setData({ submitting: true });
+    const data = this.cleanForm(form);
 
     try {
       if (this.data.isEdit) {
-        await medicineApi.update(this.data.medicineId, form);
-        wx.showToast({ title: '✅ 更新成功', icon: 'none', duration: 2000 });
+        await medicineApi.update(this.data.medicineId, data);
+        wx.showToast({ title: '已更新', icon: 'success', duration: 2000 });
       } else {
-        await medicineApi.create(form);
-        wx.showToast({ title: '✅ 添加成功', icon: 'none', duration: 2000 });
+        await medicineApi.create(data);
+        wx.showToast({ title: '已添加', icon: 'success', duration: 2000 });
       }
       setTimeout(() => wx.navigateBack(), 1500);
     } catch (err) {

@@ -24,6 +24,31 @@
   background: #F5F7FA;
 }
 
+.avatar-placeholder {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: #F5F7FA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+}
+
+.elderly-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #F5F7FA;
+}
+
+/* override for elderly avatar placeholder */
+.elderly-item .avatar-placeholder {
+  width: 80rpx;
+  height: 80rpx;
+  font-size: 40rpx;
+}
+
 .member-name {
   font-size: var(--font-md);
   font-weight: 500;

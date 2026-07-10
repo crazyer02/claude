@@ -1,11 +1,13 @@
 /**
  * 用药记录页
  */
+const app = getApp();
 const { recordApi } = require('../../utils/api');
 const { getStatusConfig, formatTime, formatDateStr } = require('../../utils/util');
 
 Page({
   data: {
+    fontSizeMode: 'large',
     records: [],
     selectedDate: '',
     selectedStatus: '',
@@ -19,12 +21,22 @@ Page({
   },
 
   onShow() {
+    this.setData({ fontSizeMode: app.globalData.fontSizeMode || 'large' });
     this.setData({ selectedDate: formatDateStr(new Date()) });
     this.loadRecords();
   },
 
   onPullDownRefresh() {
     this.loadRecords().then(() => wx.stopPullDownRefresh());
+  },
+
+  /**
+   * 格式化时间：把 ISO datetime 转成 "HH:MM"
+   */
+  formatRecordTime(raw) {
+    if (!raw) return '';
+    const match = raw.match(/[T ](\d{2}:\d{2})/);
+    return match ? match[1] : raw;
   },
 
   async loadRecords() {
@@ -35,7 +47,13 @@ Page({
       if (this.data.selectedStatus) params.status = this.data.selectedStatus;
 
       const records = await recordApi.getList(params);
-      this.setData({ records });
+      // 格式化时间显示
+      const formatted = records.map(r => ({
+        ...r,
+        scheduled_time: this.formatRecordTime(r.scheduled_time),
+        actual_time: this.formatRecordTime(r.actual_time),
+      }));
+      this.setData({ records: formatted });
     } catch (err) {
       console.error('加载记录失败:', err);
     } finally {

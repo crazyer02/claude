@@ -83,11 +83,16 @@
 }
 
 /* 药品信息 */
+.medicine-name-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
 .medicine-name {
   font-size: var(--font-xl);
   font-weight: 700;
   color: var(--text-primary);
-  display: block;
 }
 
 .medicine-spec {
@@ -101,8 +106,8 @@
   font-size: var(--font-lg);
   color: var(--primary);
   font-weight: 600;
-  display: block;
-  margin-top: 8rpx;
+  white-space: nowrap;
+  margin-left: 16rpx;
 }
 
 .medicine-position {

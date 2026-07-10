@@ -1,9 +1,53 @@
 <!--
   添加/编辑药品
 -->
-<view class="page-container">
+<view class="page-container font-{{fontSizeMode}}">
 
-  <view class="card">
+  <!-- 只读详情模式 -->
+  <view class="card" wx:if="{{readonly}}">
+    <view class="card-title">{{form.name}}</view>
+    <view class="detail-grid">
+      <view class="detail-row">
+        <text class="detail-label">规格</text>
+        <text class="detail-value">{{form.specification || '未设置'}}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">单次用量</text>
+        <text class="detail-value">{{form.dosage}}{{form.unit}}/次</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">频率</text>
+        <text class="detail-value">{{form.frequency === 'daily' ? '每天' : form.frequency === 'every_other_day' ? '隔天' : form.frequency === 'weekly' ? '每周' : '按需'}}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">总库存</text>
+        <text class="detail-value">{{form.total_stock}}</text>
+      </view>
+      <view class="detail-row">
+        <text class="detail-label">库存阈值</text>
+        <text class="detail-value">少于{{form.stock_alert_threshold}}时提醒</text>
+      </view>
+      <view class="detail-row" wx:if="{{form.box_position}}">
+        <text class="detail-label">药箱仓位</text>
+        <text class="detail-value">📍 {{form.box_position}}号仓</text>
+      </view>
+      <view class="detail-row" wx:if="{{form.start_date}}">
+        <text class="detail-label">开始日期</text>
+        <text class="detail-value">{{form.start_date}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{form.end_date}}">
+        <text class="detail-label">结束日期</text>
+        <text class="detail-value">{{form.end_date}}</text>
+      </view>
+      <view class="detail-row" wx:if="{{form.notes}}">
+        <text class="detail-label">备注</text>
+        <text class="detail-value">{{form.notes}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑/添加模式 -->
+  <view class="card" wx:if="{{!readonly}}">
     <view class="card-title">{{isEdit ? '编辑药品' : '添加药品'}}</view>
 
     <!-- 药品名称 -->
@@ -153,8 +197,8 @@
     </view>
   </view>
 
-  <!-- 提交按钮 -->
-  <view class="submit-section">
+  <!-- 提交按钮（只读时隐藏） -->
+  <view class="submit-section" wx:if="{{!readonly}}">
     <large-button
       text="{{isEdit ? '保存修改' : '添加药品'}}"
       type="primary"

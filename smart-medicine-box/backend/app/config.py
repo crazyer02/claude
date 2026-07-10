@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7天
 
     # 定时任务
-    REMINDER_CHECK_INTERVAL: int = 60  # 每60秒检查一次提醒
+    REMINDER_CHECK_INTERVAL: int = 300  # 每5分钟检查一次提醒
 
     # 用药提醒提前量（分钟）
     REMINDER_ADVANCE_MINUTES: int = 5

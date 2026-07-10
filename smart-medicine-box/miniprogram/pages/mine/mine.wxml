@@ -1,11 +1,13 @@
 <!-- 个人中心 -->
-<view class="page-container">
+<view class="page-container font-{{fontSizeMode}}">
 
   <!-- 用户信息卡片 -->
   <view class="user-card" wx:if="{{userInfo}}">
-    <image class="user-avatar" src="{{userInfo.avatar_url || '/images/default-avatar.png'}}" mode="aspectFill" />
+    <image class="user-avatar" wx:if="{{userInfo.avatar_url}}" src="{{userInfo.avatar_url}}" mode="aspectFill" />
+<view wx:else class="user-avatar-placeholder"><text>👤</text></view>
     <view class="user-info">
       <text class="user-name">{{userInfo.nickname || '未设置昵称'}}</text>
+      <text class="user-age" wx:if="{{userInfo.age}}">🎂 {{userInfo.age}}岁</text>
       <text class="user-phone" wx:if="{{userInfo.phone}}">📱 {{userInfo.phone}}</text>
     </view>
     <view class="edit-btn" bindtap="onEditProfile">

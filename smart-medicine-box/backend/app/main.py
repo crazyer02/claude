@@ -7,14 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.config import settings
-from app.database import init_db, get_connection, close_db, get_db
+from app.database import init_db, get_connection
 from app.routers import user, medicine
 from app.services.reminder_service import ReminderService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用启动和关闭时的操作"""
+    """应用启动和关闭"""
     print(f"\n{'='*50}")
     print(f"  {settings.APP_NAME} v{settings.APP_VERSION}")
     print(f"  http://0.0.0.0:8000")
@@ -30,7 +30,6 @@ async def lifespan(app: FastAPI):
         "interval",
         seconds=settings.REMINDER_CHECK_INTERVAL,
         id="check_reminders",
-        name="check reminders",
         misfire_grace_time=30,
         max_instances=1,
     )
@@ -40,16 +39,13 @@ async def lifespan(app: FastAPI):
         hour=0,
         minute=5,
         id="generate_daily_records",
-        name="generate daily records",
         max_instances=1,
     )
     scheduler.start()
     print("[OK] Reminder scheduler started")
 
     yield
-
     scheduler.shutdown(wait=False)
-    print(f"  {settings.APP_NAME} stopped")
 
 
 app = FastAPI(
@@ -59,7 +55,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -69,23 +64,20 @@ app.add_middleware(
 )
 
 
-# 数据库中间件：每个请求自动打开/提交/关闭连接
+# 数据库中间件：每个请求自动 commit/rollback/close
 @app.middleware("http")
 async def db_middleware(request: Request, call_next):
-    conn = get_connection()
-    # 存入线程本地存储
-    import app.database as db_module
-    db_module._local.conn = conn
-    try:
-        response = await call_next(request)
-        conn.commit()
-        return response
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
-        db_module._local.conn = None
+    response = await call_next(request)
+    conn = getattr(request.state, "db_conn", None)
+    if conn:
+        try:
+            conn.commit()
+        except Exception:
+            conn.rollback()
+        finally:
+            conn.close()
+            request.state.db_conn = None
+    return response
 
 
 app.include_router(user.router)

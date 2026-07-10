@@ -16,6 +16,18 @@
   background: #E6F4FF;
 }
 
+.user-avatar-placeholder {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 6rpx solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60rpx;
+}
+
 .user-info {
   flex: 1;
   margin-left: var(--space-lg);
@@ -25,6 +37,13 @@
   font-size: var(--font-xl);
   font-weight: 700;
   color: #FFFFFF;
+  display: block;
+}
+
+.user-age {
+  font-size: var(--font-md);
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 8rpx;
   display: block;
 }
 

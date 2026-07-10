@@ -3,7 +3,7 @@
 """
 import sqlite3
 from fastapi import APIRouter, Depends, HTTPException
-from app.database import get_db
+from app.dependencies import get_db
 from app.schemas.user import (
     UserLoginRequest, UserUpdateRequest, UserResponse, LoginResponse,
     FamilyBindRequest, FamilyMemberResponse, ElderlyInfoResponse,

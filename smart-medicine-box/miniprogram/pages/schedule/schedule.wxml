@@ -1,5 +1,5 @@
 <!-- 用药计划列表 -->
-<view class="page-container">
+<view class="page-container font-{{fontSizeMode}}">
 
   <view wx:if="{{schedules.length === 0 && !loading}}" class="empty-state">
     <text class="icon">📅</text>

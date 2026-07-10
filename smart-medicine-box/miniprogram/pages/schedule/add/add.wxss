@@ -1,6 +1,23 @@
 .required { color: var(--danger); }
 .placeholder { color: var(--text-hint); font-size: var(--font-md); }
 
+/* 空状态 */
+.empty-hint {
+  text-align: center;
+  padding: 32rpx;
+  background: #FAFBFC;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  color: #999;
+}
+
+.link-btn {
+  margin-top: 16rpx;
+  color: #4A90D9;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
 /* 药品选择器 */
 .medicine-selector {
   display: flex;

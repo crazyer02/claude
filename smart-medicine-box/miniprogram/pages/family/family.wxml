@@ -1,5 +1,5 @@
 <!-- 家人绑定 -->
-<view class="page-container">
+<view class="page-container font-{{fontSizeMode}}">
 
   <!-- ===== 老年用户视图：我的家人 ===== -->
   <view wx:if="{{userType === 'elderly'}}">
@@ -15,7 +15,8 @@
 
       <view class="member-list">
         <view class="member-item" wx:for="{{familyMembers}}" wx:key="id">
-          <image class="member-avatar" src="{{item.avatar_url || '/images/default-avatar.png'}}" mode="aspectFill" />
+          <image class="member-avatar" wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill" />
+<view wx:else class="avatar-placeholder"><text>👤</text></view>
           <text class="member-name">{{item.nickname || '家人'}}</text>
           <text class="member-relation">{{item.relationship}}</text>
         </view>
@@ -42,7 +43,8 @@
           data-id="{{item.id}}"
           bindtap="goElderlyDetail"
         >
-          <image class="elderly-avatar" src="{{item.avatar_url || '/images/default-avatar.png'}}" mode="aspectFill" />
+          <image class="elderly-avatar" wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill" />
+<view wx:else class="avatar-placeholder"><text>👴</text></view>
           <view class="elderly-info">
             <text class="elderly-name">{{item.nickname || '老人'}} ({{item.age || '未知'}}岁)</text>
             <text class="elderly-contact" wx:if="{{item.emergency_contact}}">📞 {{item.emergency_contact}}</text>

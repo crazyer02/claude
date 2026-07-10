@@ -166,8 +166,9 @@
 .item-name {
   font-size: var(--font-lg);
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--primary);
   display: block;
+  border-bottom: 2rpx dashed var(--primary-light);
 }
 
 .item-dosage {
