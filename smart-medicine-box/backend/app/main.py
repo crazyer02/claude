@@ -7,22 +7,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.config import settings
-from app.models.database import engine, Base
+from app.database import init_db
 from app.routers import user, medicine
 from app.services.reminder_service import ReminderService
 
 
-# ==================== 应用生命周期 ====================
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用启动和关闭时的操作"""
-    # 启动时：创建数据库表、启动定时任务
-    print(f"🚀 {settings.APP_NAME} v{settings.APP_VERSION} 启动中...")
+    print(f"\n{'='*50}")
+    print(f"  {settings.APP_NAME} v{settings.APP_VERSION}")
+    print(f"  http://0.0.0.0:8000")
+    print(f"  API docs: http://0.0.0.0:8000/docs")
+    print(f"{'='*50}\n")
 
-    # 创建数据库表（开发环境用，生产环境建议用 Alembic 迁移）
-    Base.metadata.create_all(bind=engine)
-    print("✅ 数据库表检查完成")
+    # 初始化数据库
+    init_db()
+    print("[OK] SQLite database initialized")
 
     # 启动定时提醒任务
     scheduler = BackgroundScheduler()
@@ -33,8 +34,8 @@ async def lifespan(app: FastAPI):
         id="check_reminders",
         name="检查用药提醒",
         misfire_grace_time=30,
+        max_instances=1,
     )
-    # 每天凌晨 00:05 生成次日用药记录
     scheduler.add_job(
         ReminderService.generate_daily_records,
         "cron",
@@ -42,16 +43,15 @@ async def lifespan(app: FastAPI):
         minute=5,
         id="generate_daily_records",
         name="生成次日用药记录",
-        args=[None],  # db session 在函数内部创建
+        max_instances=1,
     )
     scheduler.start()
-    print("⏰ 定时提醒任务已启动")
+    print("[OK] Reminder scheduler started")
 
     yield
 
-    # 关闭时
     scheduler.shutdown(wait=False)
-    print(f"👋 {settings.APP_NAME} 已关闭")
+    print(f"  {settings.APP_NAME} 已关闭")
 
 
 app = FastAPI(
@@ -61,39 +61,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ==================== 中间件 ====================
-
+# CORS 中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 生产环境应限定域名
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ==================== 路由注册 ====================
-
+# 注册路由
 app.include_router(user.router)
 app.include_router(medicine.router)
 
 
-# ==================== 健康检查 ====================
-
 @app.get("/api/health", tags=["系统"])
 async def health_check():
     """健康检查接口"""
-    return {
-        "status": "ok",
-        "app": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-    }
+    return {"status": "ok", "app": settings.APP_NAME, "version": settings.APP_VERSION}
 
 
 @app.get("/", tags=["系统"])
 async def root():
-    """根路径"""
-    return {
-        "message": f"欢迎使用{settings.APP_NAME} API",
-        "docs": "/docs",
-        "version": settings.APP_VERSION,
-    }
+    return {"message": f"欢迎使用{settings.APP_NAME} API", "docs": "/docs", "version": settings.APP_VERSION}

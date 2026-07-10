@@ -7,7 +7,7 @@
 
   <view class="med-body">
     <view class="med-image">
-      <image wx:if="{{medicine.image_url}}" src="{{medicine.image_url}}" mode="aspectFill" />
+      <image class="med-image-img" wx:if="{{medicine.image_url}}" src="{{medicine.image_url}}" mode="aspectFill" />
       <text wx:else class="med-placeholder">💊</text>
     </view>
 

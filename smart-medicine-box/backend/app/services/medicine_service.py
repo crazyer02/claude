@@ -1,18 +1,10 @@
 """
 药品服务 - 处理药品CRUD和库存管理
 """
+import sqlite3
+from datetime import datetime, timedelta
 from typing import List, Optional
-from datetime import datetime, date, time, timedelta
-from sqlalchemy.orm import Session
-
-from app.models import Medicine, MedicineSchedule, MedicineRecord
-from app.models.medicine import MedicineFrequency, RecordStatus
-from app.schemas.medicine import (
-    MedicineCreate, MedicineUpdate, MedicineResponse,
-    ScheduleCreate, ScheduleUpdate, ScheduleResponse,
-    RecordCreate, RecordResponse,
-    TodayScheduleItem, TodayOverview,
-)
+from app.database import row_to_dict
 
 
 class MedicineService:
@@ -21,351 +13,313 @@ class MedicineService:
     # ============== 药品管理 ==============
 
     @staticmethod
-    def create_medicine(db: Session, user_id: int, data: MedicineCreate) -> Medicine:
+    def create_medicine(conn: sqlite3.Connection, user_id: int, data_dict: dict) -> dict:
         """添加药品"""
-        medicine = Medicine(
-            user_id=user_id,
-            name=data.name,
-            specification=data.specification,
-            dosage=data.dosage,
-            unit=data.unit,
-            frequency=MedicineFrequency(data.frequency),
-            start_date=data.start_date,
-            end_date=data.end_date,
-            total_stock=data.total_stock,
-            remaining_stock=data.total_stock,  # 初始剩余=总库存
-            stock_alert_threshold=data.stock_alert_threshold,
-            box_position=data.box_position,
-            image_url=data.image_url,
-            notes=data.notes,
-        )
-        db.add(medicine)
-        db.commit()
-        db.refresh(medicine)
-        return medicine
+        cursor = conn.execute("""
+            INSERT INTO medicines (user_id, name, specification, dosage, unit, frequency,
+                start_date, end_date, total_stock, remaining_stock, stock_alert_threshold,
+                box_position, image_url, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            user_id, data_dict["name"], data_dict.get("specification"),
+            data_dict["dosage"], data_dict.get("unit", "片"),
+            data_dict.get("frequency", "daily"), data_dict.get("start_date"),
+            data_dict.get("end_date"), data_dict.get("total_stock", 0),
+            data_dict.get("total_stock", 0),  # remaining = total initially
+            data_dict.get("stock_alert_threshold", 5),
+            data_dict.get("box_position"), data_dict.get("image_url"),
+            data_dict.get("notes"),
+        ))
+        cursor = conn.execute("SELECT * FROM medicines WHERE id = ?", (cursor.lastrowid,))
+        return row_to_dict(cursor.fetchone())
 
     @staticmethod
-    def get_medicines(
-        db: Session,
-        user_id: int,
-        is_active: Optional[bool] = None,
-    ) -> List[Medicine]:
+    def get_medicines(conn: sqlite3.Connection, user_id: int, is_active: Optional[bool] = None) -> List[dict]:
         """获取用户的所有药品"""
-        query = db.query(Medicine).filter(Medicine.user_id == user_id)
         if is_active is not None:
-            query = query.filter(Medicine.is_active == is_active)
-        return query.order_by(Medicine.created_at.desc()).all()
+            cursor = conn.execute(
+                "SELECT * FROM medicines WHERE user_id = ? AND is_active = ? ORDER BY created_at DESC",
+                (user_id, 1 if is_active else 0)
+            )
+        else:
+            cursor = conn.execute(
+                "SELECT * FROM medicines WHERE user_id = ? ORDER BY created_at DESC",
+                (user_id,)
+            )
+        return [row_to_dict(r) for r in cursor.fetchall()]
 
     @staticmethod
-    def get_medicine(db: Session, medicine_id: int, user_id: int) -> Medicine:
+    def get_medicine(conn: sqlite3.Connection, medicine_id: int, user_id: int) -> dict:
         """获取单个药品"""
-        medicine = db.query(Medicine).filter(
-            Medicine.id == medicine_id,
-            Medicine.user_id == user_id,
-        ).first()
+        cursor = conn.execute(
+            "SELECT * FROM medicines WHERE id = ? AND user_id = ?",
+            (medicine_id, user_id)
+        )
+        medicine = cursor.fetchone()
         if not medicine:
             raise ValueError("药品不存在")
-        return medicine
+        return row_to_dict(medicine)
 
     @staticmethod
-    def update_medicine(
-        db: Session, medicine_id: int, user_id: int, data: MedicineUpdate
-    ) -> Medicine:
+    def update_medicine(conn: sqlite3.Connection, medicine_id: int, user_id: int, data_dict: dict) -> dict:
         """更新药品信息"""
-        medicine = MedicineService.get_medicine(db, medicine_id, user_id)
-        update_data = data.model_dump(exclude_unset=True)
+        MedicineService.get_medicine(conn, medicine_id, user_id)  # 验证存在
 
-        # 如果更新了总库存，同步调整剩余库存
+        update_data = {k: v for k, v in data_dict.items() if v is not None}
+        if not update_data:
+            return MedicineService.get_medicine(conn, medicine_id, user_id)
+
+        # 库存联动调整
         if "total_stock" in update_data:
-            old_total = medicine.total_stock
-            old_remaining = medicine.remaining_stock
-            # 按比例调整
-            if old_total > 0:
-                ratio = update_data["total_stock"] / old_total
-                update_data["remaining_stock"] = int(old_remaining * ratio)
-            else:
-                update_data["remaining_stock"] = update_data["total_stock"]
+            old = MedicineService.get_medicine(conn, medicine_id, user_id)
+            ratio = update_data["total_stock"] / old["total_stock"] if old["total_stock"] > 0 else 0
+            if ratio > 0:
+                new_remaining = int(old["remaining_stock"] * ratio)
+                conn.execute("UPDATE medicines SET remaining_stock = ? WHERE id = ?", (new_remaining, medicine_id))
 
-        for key, value in update_data.items():
-            setattr(medicine, key, value)
-        db.commit()
-        db.refresh(medicine)
-        return medicine
+        fields = ", ".join(f"{k} = ?" for k in update_data.keys())
+        values = list(update_data.values()) + [medicine_id]
+        conn.execute(f"UPDATE medicines SET {fields} WHERE id = ?", values)
+
+        return MedicineService.get_medicine(conn, medicine_id, user_id)
 
     @staticmethod
-    def delete_medicine(db: Session, medicine_id: int, user_id: int) -> bool:
+    def delete_medicine(conn: sqlite3.Connection, medicine_id: int, user_id: int) -> None:
         """删除药品（软删除）"""
-        medicine = MedicineService.get_medicine(db, medicine_id, user_id)
-        medicine.is_active = False
-        db.commit()
-        return True
+        MedicineService.get_medicine(conn, medicine_id, user_id)
+        conn.execute("UPDATE medicines SET is_active = 0 WHERE id = ?", (medicine_id,))
 
     @staticmethod
-    def update_stock(db: Session, medicine_id: int, user_id: int, used: int = 1) -> Medicine:
-        """更新药品库存（-1等）"""
-        medicine = MedicineService.get_medicine(db, medicine_id, user_id)
-        medicine.remaining_stock = max(0, medicine.remaining_stock - used)
-        db.commit()
-        db.refresh(medicine)
-        return medicine
+    def update_stock(conn: sqlite3.Connection, medicine_id: int, user_id: int, used: int = 1) -> None:
+        """扣减库存"""
+        conn.execute(
+            "UPDATE medicines SET remaining_stock = MAX(0, remaining_stock - ?) WHERE id = ? AND user_id = ?",
+            (used, medicine_id, user_id)
+        )
 
     @staticmethod
-    def get_low_stock_medicines(db: Session, user_id: int) -> List[Medicine]:
+    def get_low_stock_medicines(conn: sqlite3.Connection, user_id: int) -> List[dict]:
         """获取库存不足的药品"""
-        return db.query(Medicine).filter(
-            Medicine.user_id == user_id,
-            Medicine.is_active == True,
-            Medicine.remaining_stock <= Medicine.stock_alert_threshold,
-        ).all()
+        cursor = conn.execute("""
+            SELECT * FROM medicines
+            WHERE user_id = ? AND is_active = 1 AND remaining_stock <= stock_alert_threshold
+        """, (user_id,))
+        return [row_to_dict(r) for r in cursor.fetchall()]
 
     # ============== 用药计划 ==============
 
     @staticmethod
-    def create_schedule(db: Session, user_id: int, data: ScheduleCreate) -> MedicineSchedule:
+    def create_schedule(conn: sqlite3.Connection, user_id: int, data_dict: dict) -> dict:
         """创建用药计划"""
-        # 验证药品属于该用户
-        MedicineService.get_medicine(db, data.medicine_id, user_id)
+        MedicineService.get_medicine(conn, data_dict["medicine_id"], user_id)
 
-        # 解析提醒时间
-        hour, minute = map(int, data.reminder_time.split(":"))
-        reminder_time = time(hour=hour, minute=minute)
-
-        schedule = MedicineSchedule(
-            medicine_id=data.medicine_id,
-            user_id=user_id,
-            period=data.period,
-            time_label=data.time_label,
-            reminder_time=reminder_time,
-            dosage_at_time=data.dosage_at_time,
-            days_of_week=data.days_of_week,
-        )
-        db.add(schedule)
-        db.commit()
-        db.refresh(schedule)
-        return schedule
+        cursor = conn.execute("""
+            INSERT INTO medicine_schedules (medicine_id, user_id, period, time_label,
+                reminder_time, dosage_at_time, days_of_week)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data_dict["medicine_id"], user_id, data_dict["period"],
+            data_dict.get("time_label", ""), data_dict["reminder_time"],
+            data_dict["dosage_at_time"], data_dict.get("days_of_week"),
+        ))
+        cursor = conn.execute("SELECT * FROM medicine_schedules WHERE id = ?", (cursor.lastrowid,))
+        return row_to_dict(cursor.fetchone())
 
     @staticmethod
-    def get_schedules(db: Session, user_id: int, medicine_id: Optional[int] = None) -> List[ScheduleResponse]:
+    def get_schedules(conn: sqlite3.Connection, user_id: int, medicine_id: Optional[int] = None) -> List[dict]:
         """获取用药计划列表"""
-        query = db.query(MedicineSchedule).filter(
-            MedicineSchedule.user_id == user_id,
-            MedicineSchedule.is_active == True,
-        )
         if medicine_id:
-            query = query.filter(MedicineSchedule.medicine_id == medicine_id)
-        schedules = query.order_by(MedicineSchedule.reminder_time).all()
-
-        result = []
-        for s in schedules:
-            result.append(ScheduleResponse(
-                id=s.id,
-                medicine_id=s.medicine_id,
-                medicine_name=s.medicine.name if s.medicine else "",
-                medicine_specification=s.medicine.specification if s.medicine else None,
-                period=s.period,
-                time_label=s.time_label,
-                reminder_time=s.reminder_time.strftime("%H:%M") if s.reminder_time else "",
-                dosage_at_time=s.dosage_at_time,
-                days_of_week=s.days_of_week,
-                is_active=s.is_active,
-                created_at=s.created_at,
-            ))
-        return result
+            cursor = conn.execute("""
+                SELECT s.*, m.name as medicine_name, m.specification as medicine_specification
+                FROM medicine_schedules s
+                JOIN medicines m ON m.id = s.medicine_id
+                WHERE s.user_id = ? AND s.is_active = 1 AND s.medicine_id = ?
+                ORDER BY s.reminder_time
+            """, (user_id, medicine_id))
+        else:
+            cursor = conn.execute("""
+                SELECT s.*, m.name as medicine_name, m.specification as medicine_specification
+                FROM medicine_schedules s
+                JOIN medicines m ON m.id = s.medicine_id
+                WHERE s.user_id = ? AND s.is_active = 1
+                ORDER BY s.reminder_time
+            """, (user_id,))
+        return [row_to_dict(r) for r in cursor.fetchall()]
 
     @staticmethod
-    def update_schedule(
-        db: Session, schedule_id: int, user_id: int, data: ScheduleUpdate
-    ) -> MedicineSchedule:
+    def update_schedule(conn: sqlite3.Connection, schedule_id: int, user_id: int, data_dict: dict) -> dict:
         """更新用药计划"""
-        schedule = db.query(MedicineSchedule).filter(
-            MedicineSchedule.id == schedule_id,
-            MedicineSchedule.user_id == user_id,
-        ).first()
-        if not schedule:
+        cursor = conn.execute(
+            "SELECT * FROM medicine_schedules WHERE id = ? AND user_id = ?",
+            (schedule_id, user_id)
+        )
+        if not cursor.fetchone():
             raise ValueError("用药计划不存在")
 
-        update_data = data.model_dump(exclude_unset=True)
-        if "reminder_time" in update_data and isinstance(update_data["reminder_time"], str):
-            hour, minute = map(int, update_data["reminder_time"].split(":"))
-            update_data["reminder_time"] = time(hour=hour, minute=minute)
+        update_data = {k: v for k, v in data_dict.items() if v is not None}
+        if update_data:
+            fields = ", ".join(f"{k} = ?" for k in update_data.keys())
+            values = list(update_data.values()) + [schedule_id]
+            conn.execute(f"UPDATE medicine_schedules SET {fields} WHERE id = ?", values)
 
-        for key, value in update_data.items():
-            setattr(schedule, key, value)
-        db.commit()
-        db.refresh(schedule)
-        return schedule
+        cursor = conn.execute("SELECT * FROM medicine_schedules WHERE id = ?", (schedule_id,))
+        return row_to_dict(cursor.fetchone())
 
     @staticmethod
-    def delete_schedule(db: Session, schedule_id: int, user_id: int) -> bool:
+    def delete_schedule(conn: sqlite3.Connection, schedule_id: int, user_id: int) -> None:
         """删除用药计划"""
-        schedule = db.query(MedicineSchedule).filter(
-            MedicineSchedule.id == schedule_id,
-            MedicineSchedule.user_id == user_id,
-        ).first()
-        if not schedule:
+        cursor = conn.execute(
+            "SELECT id FROM medicine_schedules WHERE id = ? AND user_id = ?",
+            (schedule_id, user_id)
+        )
+        if not cursor.fetchone():
             raise ValueError("用药计划不存在")
-        schedule.is_active = False
-        db.commit()
-        return True
+        conn.execute("UPDATE medicine_schedules SET is_active = 0 WHERE id = ?", (schedule_id,))
 
     # ============== 用药记录 ==============
 
     @staticmethod
-    def create_record(db: Session, user_id: int, data: RecordCreate) -> MedicineRecord:
+    def create_record(conn: sqlite3.Connection, user_id: int, data_dict: dict) -> dict:
         """记录用药"""
-        MedicineService.get_medicine(db, data.medicine_id, user_id)
+        MedicineService.get_medicine(conn, data_dict["medicine_id"], user_id)
 
-        record = MedicineRecord(
-            schedule_id=data.schedule_id,
-            medicine_id=data.medicine_id,
-            user_id=user_id,
-            scheduled_time=data.scheduled_time,
-            actual_time=data.actual_time or datetime.utcnow(),
-            status=RecordStatus(data.status),
-            notes=data.notes,
-        )
-        db.add(record)
+        status = data_dict.get("status", "taken")
+        actual_time = data_dict.get("actual_time") or (datetime.utcnow().isoformat() if status == "taken" else None)
+
+        cursor = conn.execute("""
+            INSERT INTO medicine_records (schedule_id, medicine_id, user_id, scheduled_time, actual_time, status, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data_dict.get("schedule_id"), data_dict["medicine_id"], user_id,
+            data_dict["scheduled_time"], actual_time, status, data_dict.get("notes"),
+        ))
 
         # 如果已服用，自动减库存
-        if data.status == "taken":
-            MedicineService.update_stock(db, data.medicine_id, user_id)
+        if status == "taken":
+            MedicineService.update_stock(conn, data_dict["medicine_id"], user_id)
 
-        db.commit()
-        db.refresh(record)
-        return record
+        cursor = conn.execute("""
+            SELECT r.*, m.name as medicine_name, m.dosage as medicine_dosage
+            FROM medicine_records r
+            JOIN medicines m ON m.id = r.medicine_id
+            WHERE r.id = ?
+        """, (cursor.lastrowid,))
+        return row_to_dict(cursor.fetchone())
 
     @staticmethod
     def get_records(
-        db: Session,
+        conn: sqlite3.Connection,
         user_id: int,
         date_str: Optional[str] = None,
         medicine_id: Optional[int] = None,
         status: Optional[str] = None,
         limit: int = 50,
-    ) -> List[RecordResponse]:
+    ) -> List[dict]:
         """获取用药记录"""
-        query = db.query(MedicineRecord).filter(MedicineRecord.user_id == user_id)
+        query = """
+            SELECT r.*, m.name as medicine_name, m.dosage as medicine_dosage
+            FROM medicine_records r
+            JOIN medicines m ON m.id = r.medicine_id
+            WHERE r.user_id = ?
+        """
+        params = [user_id]
 
         if date_str:
-            target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-            day_start = datetime.combine(target_date, datetime.min.time())
-            day_end = datetime.combine(target_date, datetime.max.time())
-            query = query.filter(
-                MedicineRecord.scheduled_time >= day_start,
-                MedicineRecord.scheduled_time <= day_end,
-            )
-
-        if medicine_id:
-            query = query.filter(MedicineRecord.medicine_id == medicine_id)
-
+            query += " AND r.scheduled_time LIKE ?"
+            params.append(f"{date_str}%")
+        if medicine_id is not None:
+            query += " AND r.medicine_id = ?"
+            params.append(medicine_id)
         if status:
-            query = query.filter(MedicineRecord.status == RecordStatus(status))
+            query += " AND r.status = ?"
+            params.append(status)
 
-        records = query.order_by(MedicineRecord.scheduled_time.desc()).limit(limit).all()
+        query += " ORDER BY r.scheduled_time DESC LIMIT ?"
+        params.append(limit)
 
-        return [
-            RecordResponse(
-                id=r.id,
-                schedule_id=r.schedule_id,
-                medicine_id=r.medicine_id,
-                medicine_name=r.medicine.name if r.medicine else "",
-                medicine_dosage=r.medicine.dosage if r.medicine else "",
-                scheduled_time=r.scheduled_time,
-                actual_time=r.actual_time,
-                status=r.status.value if hasattr(r.status, 'value') else r.status,
-                notes=r.notes,
-                created_at=r.created_at,
-            )
-            for r in records
-        ]
+        cursor = conn.execute(query, params)
+        return [row_to_dict(r) for r in cursor.fetchall()]
 
     # ============== 今日概览 ==============
 
     @staticmethod
-    def get_today_overview(db: Session, user_id: int) -> TodayOverview:
+    def get_today_overview(conn: sqlite3.Connection, user_id: int) -> dict:
         """获取今日用药概览 - 首页核心数据"""
-        today = datetime.utcnow().date()
-        weekday = today.isoweekday()  # 1-7 (周一至周日)
+        today = datetime.utcnow()
+        today_str = today.strftime("%Y-%m-%d")
+        weekday = today.isoweekday()
 
-        # 获取所有活跃的用药计划
-        schedules = db.query(MedicineSchedule).filter(
-            MedicineSchedule.user_id == user_id,
-            MedicineSchedule.is_active == True,
-        ).all()
+        # 获取所有活跃的用药计划及关联药品
+        cursor = conn.execute("""
+            SELECT s.*, m.name as medicine_name, m.dosage as medicine_dosage,
+                   m.is_active as med_active, m.start_date, m.end_date, m.box_position
+            FROM medicine_schedules s
+            JOIN medicines m ON m.id = s.medicine_id
+            WHERE s.user_id = ? AND s.is_active = 1 AND m.is_active = 1
+        """, (user_id,))
+        schedules = cursor.fetchall()
 
-        # 过滤今天应该执行的计划
-        today_items: List[TodayScheduleItem] = []
+        items = []
         for s in schedules:
             # 检查星期
-            if s.days_of_week:
-                allowed_days = [int(d.strip()) for d in s.days_of_week.split(",")]
-                if weekday not in allowed_days:
+            if s["days_of_week"]:
+                allowed = [int(d.strip()) for d in s["days_of_week"].split(",")]
+                if weekday not in allowed:
                     continue
-
-            # 检查药品是否启用
-            if not s.medicine or not s.medicine.is_active:
-                continue
-
             # 检查日期范围
-            if s.medicine.start_date and s.medicine.start_date > today:
+            if s["start_date"] and s["start_date"] > today_str:
                 continue
-            if s.medicine.end_date and s.medicine.end_date < today:
+            if s["end_date"] and s["end_date"] < today_str:
                 continue
 
-            # 构造计划时间
-            scheduled_datetime = datetime.combine(today, s.reminder_time)
+            scheduled_datetime = f"{today_str}T{s['reminder_time']}:00"
 
             # 查找今天的记录
-            record = db.query(MedicineRecord).filter(
-                MedicineRecord.schedule_id == s.id,
-                MedicineRecord.user_id == user_id,
-                MedicineRecord.scheduled_time == scheduled_datetime,
-            ).first()
+            cursor = conn.execute(
+                "SELECT status FROM medicine_records WHERE schedule_id = ? AND user_id = ? AND scheduled_time = ?",
+                (s["id"], user_id, scheduled_datetime)
+            )
+            record = cursor.fetchone()
 
             status = "pending"
             if record:
-                status = record.status.value if hasattr(record.status, 'value') else record.status
+                status = record["status"]
 
-            today_items.append(TodayScheduleItem(
-                schedule_id=s.id,
-                medicine_id=s.medicine_id,
-                medicine_name=s.medicine.name,
-                dosage_at_time=s.dosage_at_time,
-                period=s.period,
-                time_label=s.time_label,
-                reminder_time=s.reminder_time.strftime("%H:%M") if s.reminder_time else "",
-                status=status,
-                box_position=s.medicine.box_position,
-            ))
+            items.append({
+                "schedule_id": s["id"],
+                "medicine_id": s["medicine_id"],
+                "medicine_name": s["medicine_name"],
+                "dosage_at_time": s["dosage_at_time"],
+                "period": s["period"],
+                "time_label": s["time_label"],
+                "reminder_time": s["reminder_time"],
+                "status": status,
+                "box_position": s["box_position"],
+            })
 
-        # 排序：按时间
-        today_items.sort(key=lambda x: x.reminder_time)
-
-        total = len(today_items)
-        taken = sum(1 for item in today_items if item.status == "taken")
-        missed = sum(1 for item in today_items if item.status == "missed")
-        pending = sum(1 for item in today_items if item.status == "pending")
-
-        # 过去时间的 pending 视为 missed
+        # 过去超过1小时的pending视为missed
         now = datetime.utcnow()
-        for item in today_items:
-            if item.status == "pending":
-                item_time = datetime.combine(today, time.fromisoformat(item.reminder_time))
-                if item_time < now - timedelta(hours=1):  # 超过1小时未服用
-                    item.status = "missed"
-                    missed += 1
-                    pending -= 1
+        for item in items:
+            if item["status"] == "pending":
+                h, m = item["reminder_time"].split(":")
+                item_dt = datetime(now.year, now.month, now.day, int(h), int(m))
+                if now > item_dt + timedelta(hours=1):
+                    item["status"] = "missed"
 
-        # 重新计算
-        taken = sum(1 for item in today_items if item.status == "taken")
+        items.sort(key=lambda x: x["reminder_time"])
+
+        total = len(items)
+        taken = sum(1 for i in items if i["status"] == "taken")
+        missed = sum(1 for i in items if i["status"] == "missed")
+        pending = sum(1 for i in items if i["status"] == "pending")
         rate = (taken / total * 100) if total > 0 else 0.0
 
-        return TodayOverview(
-            date=today.strftime("%Y-%m-%d"),
-            total_count=total,
-            taken_count=taken,
-            missed_count=missed,
-            pending_count=max(0, pending),
-            adherence_rate=round(rate, 1),
-            schedules=today_items,
-        )
+        return {
+            "date": today_str,
+            "total_count": total,
+            "taken_count": taken,
+            "missed_count": missed,
+            "pending_count": pending,
+            "adherence_rate": round(rate, 1),
+            "schedules": items,
+        }

@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     SECRET_KEY: str = "your-secret-key-change-in-production"
 
-    # 数据库配置
-    DATABASE_URL: str = "mysql+pymysql://root:password@localhost:3306/smart_medicine_box?charset=utf8mb4"
+    # 数据库配置（开发环境用 SQLite，生产环境用 MySQL）
+    DATABASE_URL: str = "sqlite:///smart_medicine_box.db"
 
     # Redis 配置（用于消息队列和缓存）
     REDIS_URL: str = "redis://localhost:6379/0"
