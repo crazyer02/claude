@@ -1,7 +1,66 @@
+/* 角色切换 */
+.role-switch {
+  display: flex;
+  background: var(--bg-card);
+  border-radius: var(--radius-round);
+  padding: 6rpx;
+  margin-bottom: var(--space-md);
+  box-shadow: var(--shadow-card);
+}
+
+.role-tab {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-sm);
+  border-radius: var(--radius-round);
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  transition: all 0.3s;
+}
+
+.role-tab.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
 .info-text {
   font-size: var(--font-sm);
   color: var(--text-hint);
   margin-bottom: var(--space-md);
+}
+
+.section-label {
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+  margin: var(--space-lg) 0 var(--space-sm);
+}
+
+/* 二维码 */
+.qrcode-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-lg);
+  background: #FAFBFC;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+}
+
+.qrcode-img {
+  width: 360rpx;
+  height: 360rpx;
+  border: 8rpx solid #FFFFFF;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.qrcode-hint {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
+  margin-top: var(--space-sm);
 }
 
 /* 家人列表 */
@@ -18,49 +77,44 @@
 }
 
 .member-avatar {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
-  background: #F5F7FA;
-}
-
-.avatar-placeholder {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 50%;
-  background: #F5F7FA;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48rpx;
-}
-
-.elderly-avatar {
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
   background: #F5F7FA;
-}
-
-/* override for elderly avatar placeholder */
-.elderly-item .avatar-placeholder {
-  width: 80rpx;
-  height: 80rpx;
-  font-size: 40rpx;
 }
 
 .member-name {
-  font-size: var(--font-md);
-  font-weight: 500;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
   margin-top: var(--space-xs);
 }
 
-.member-relation {
-  font-size: var(--font-xs);
+/* 扫码按钮 */
+.scan-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-xl);
+  background: linear-gradient(135deg, #E6F4FF, #F0F8FF);
+  border: 3rpx dashed var(--primary);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.scan-icon {
+  font-size: 72rpx;
+  margin-bottom: var(--space-sm);
+}
+
+.scan-text {
+  font-size: var(--font-lg);
   color: var(--primary);
-  background: #E6F4FF;
-  padding: 2rpx var(--space-sm);
-  border-radius: var(--radius-round);
+  font-weight: 600;
+}
+
+.scan-sub {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
   margin-top: 4rpx;
 }
 
@@ -74,15 +128,24 @@
   margin-bottom: var(--space-sm);
 }
 
-.elderly-item:active {
-  opacity: 0.7;
-}
+.elderly-item:active { opacity: 0.7; }
 
 .elderly-avatar {
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
   background: #F5F7FA;
+}
+
+.avatar-placeholder {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #F5F7FA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
 }
 
 .elderly-info {
@@ -120,62 +183,4 @@
 .arrow-right {
   font-size: var(--font-sm);
   color: var(--text-hint);
-}
-
-.bind-btn-wrap {
-  margin-top: var(--space-lg);
-}
-
-/* 绑定弹窗 */
-.modal-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  width: 600rpx;
-  background: #FFFFFF;
-  border-radius: var(--radius-lg);
-  padding: var(--space-xl);
-}
-
-.modal-title {
-  font-size: var(--font-xl);
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: var(--space-lg);
-}
-
-.relation-selector {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-}
-
-.relation-item {
-  padding: var(--space-sm) var(--space-md);
-  border: 3rpx solid var(--border);
-  border-radius: var(--radius-round);
-  font-size: var(--font-md);
-  color: var(--text-secondary);
-}
-
-.relation-item.active {
-  border-color: var(--primary);
-  background: #E6F4FF;
-  color: var(--primary);
-  font-weight: 600;
-}
-
-.modal-actions {
-  display: flex;
-  margin-top: var(--space-lg);
 }

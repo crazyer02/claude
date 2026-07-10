@@ -3,7 +3,7 @@
 """
 import sqlite3
 from datetime import datetime, date, timedelta
-from app.database import get_connection, row_to_dict
+from app.database import get_connection, commit_db, close_db, row_to_dict
 from app.config import settings
 
 
@@ -62,12 +62,14 @@ class ReminderService:
 
                         print(f"[提醒] 用户{s['user_id']} - {s['medicine_name']} {s['dosage_at_time']} - {s['reminder_time']}")
 
-            conn.commit()
+            commit_db(conn)
         except Exception as e:
-            conn.rollback()
+            with __import__('app.database')._write_lock:
+                try: conn.rollback()
+                except: pass
             print(f"提醒检查异常: {e}")
         finally:
-            conn.close()
+            close_db(conn)
 
     @staticmethod
     def generate_daily_records():
@@ -117,4 +119,4 @@ class ReminderService:
             conn.rollback()
             print(f"生成记录异常: {e}")
         finally:
-            conn.close()
+            close_db(conn)

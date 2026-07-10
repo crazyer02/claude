@@ -1,5 +1,5 @@
 /**
- * 家人绑定页 - 子女绑定老人，远程查看用药情况
+ * 家人绑定页 - 老人展示二维码，家人扫码绑定
  */
 const { userApi } = require('../../utils/api');
 const app = getApp();
@@ -7,41 +7,62 @@ const app = getApp();
 Page({
   data: {
     fontSizeMode: 'large',
-    userType: 'elderly', // 'elderly' | 'family'
+    userType: 'elderly',
+    userId: null,
     bindedElderly: [],
     familyMembers: [],
+    qrcodeUrl: '',
     loading: false,
-    // 绑定表单
-    showBindForm: false,
-    elderlyUserId: '',
-    relationship: 'son',
-    relationOptions: [
-      { value: 'son', label: '儿子' },
-      { value: 'daughter', label: '女儿' },
-      { value: 'spouse', label: '配偶' },
-      { value: 'grandson', label: '孙子' },
-      { value: 'granddaughter', label: '孙女' },
-      { value: 'other', label: '其他' },
-    ],
+    showScanTip: false,
+  },
+
+  onLoad(options) {
+    // 从二维码扫码进入，自动绑定
+    if (options.bind) {
+      this.autoBind(parseInt(options.bind));
+    }
+    // 从扫码 API 返回结果
+    if (options.q) {
+      const match = options.q.match(/elderly_bind:\/\/(\d+)/);
+      if (match) {
+        this.autoBind(parseInt(match[1]));
+      }
+    }
   },
 
   onShow() {
-    this.setData({ fontSizeMode: app.globalData.fontSizeMode || 'large' });
+    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {};
+    // 从本地存储读角色偏好，默认老人
+    const savedRole = wx.getStorageSync('familyRole') || 'elderly';
+    this.setData({
+      fontSizeMode: app.globalData.fontSizeMode || 'large',
+      userId: userInfo.id,
+      userType: savedRole,
+    });
+    this.loadQrcode();
     this.loadData();
+  },
+
+  switchRole(e) {
+    const role = e.currentTarget.dataset.role;
+    wx.setStorageSync('familyRole', role);
+    this.setData({ userType: role });
+    this.loadData();
+  },
+
+  loadQrcode() {
+    const token = wx.getStorageSync('token') || app.globalData.token;
+    this.setData({ qrcodeUrl: `${app.globalData.apiBaseUrl}/user/qrcode?token=${encodeURIComponent(token)}` });
   },
 
   async loadData() {
     this.setData({ loading: true });
     try {
-      const userInfo = app.globalData.userInfo;
-      if (userInfo && userInfo.is_elderly) {
-        // 老年用户：查看自己的绑定家人
-        this.setData({ userType: 'elderly' });
+      const userInfo = app.globalData.userInfo || {};
+      if (userInfo.is_elderly) {
         const members = await userApi.getFamilyMembers(userInfo.id);
         this.setData({ familyMembers: members || [] });
       } else {
-        // 子女用户：查看绑定的老人
-        this.setData({ userType: 'family' });
         const elderly = await userApi.getBindedElderly();
         this.setData({ bindedElderly: elderly || [] });
       }
@@ -52,46 +73,54 @@ Page({
     }
   },
 
-  showBind() {
-    this.setData({ showBindForm: true });
-  },
-
-  hideBind() {
-    this.setData({ showBindForm: false });
-  },
-
-  onElderlyIdInput(e) {
-    this.setData({ elderlyUserId: e.detail.value });
-  },
-
-  onSelectRelation(e) {
-    this.setData({ relationship: e.currentTarget.dataset.value });
-  },
-
-  async onSubmitBind() {
-    const { elderlyUserId, relationship } = this.data;
-    if (!elderlyUserId) {
-      wx.showToast({ title: '请输入老人用户ID', icon: 'none' });
-      return;
-    }
-    try {
-      await userApi.bindFamily({
-        elderly_user_id: parseInt(elderlyUserId),
-        relationship,
-      });
-      wx.showToast({ title: '✅ 绑定成功', icon: 'none', duration: 2000 });
-      this.setData({ showBindForm: false, elderlyUserId: '' });
-      this.loadData();
-    } catch (err) {
-      console.error('绑定失败:', err);
-    }
+  /**
+   * 扫码绑定（家人端）
+   */
+  onScanCode() {
+    wx.scanCode({
+      onlyFromCamera: true,
+      scanType: ['qrCode'],
+      success: (res) => {
+        const match = res.result.match(/elderly_bind:\/\/(\d+)/);
+        if (match) {
+          this.autoBind(parseInt(match[1]));
+        } else {
+          wx.showToast({ title: '无效的绑定二维码', icon: 'none' });
+        }
+      },
+      fail: () => {
+        wx.showToast({ title: '扫码取消', icon: 'none' });
+      },
+    });
   },
 
   /**
-   * 查看老人用药详情
+   * 执行绑定
    */
+  async autoBind(elderlyId) {
+    if (!elderlyId) return;
+    try {
+      await userApi.bindFamily({ elderly_user_id: elderlyId, relationship: 'other' });
+      wx.showToast({ title: '绑定成功', icon: 'success', duration: 2000 });
+      this.setData({ userType: 'family' });
+      this.loadData();
+    } catch (err) {
+      wx.showToast({ title: '绑定失败，可能已绑定', icon: 'none' });
+    }
+  },
+
   goElderlyDetail(e) {
     const id = e.currentTarget.dataset.id;
     wx.navigateTo({ url: `/pages/index/index?elderly_id=${id}` });
+  },
+
+  /**
+   * 预览二维码大图
+   */
+  previewQrcode() {
+    wx.previewImage({
+      urls: [this.data.qrcodeUrl],
+      current: this.data.qrcodeUrl,
+    });
   },
 });

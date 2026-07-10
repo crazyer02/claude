@@ -1,8 +1,9 @@
 """
 用户相关 API 路由
 """
-import sqlite3
-from fastapi import APIRouter, Depends, HTTPException
+import sqlite3, io, base64, qrcode
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from app.dependencies import get_db
 from app.schemas.user import (
     UserLoginRequest, UserUpdateRequest, UserResponse, LoginResponse,
@@ -94,3 +95,41 @@ async def get_elderly_info(
         return ElderlyInfoResponse(**info)
     except ValueError as e:
         raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.get("/qrcode", summary="生成绑定二维码")
+async def get_bind_qrcode(token: str = Query(None)):
+    """生成绑定二维码（通过 token 参数鉴权，兼容 image 标签）"""
+    if not token:
+        raise HTTPException(status_code=401)
+    from app.utils.auth import decode_access_token
+    payload = decode_access_token(token)
+    if not payload or not payload.get("sub"):
+        raise HTTPException(status_code=401)
+    user_id = int(payload["sub"])
+    # 微信小程序链接：家人用微信扫一扫直接打开小程序并自动绑定
+    # 也可在小程序内用 wx.scanCode 扫码绑定
+    qr_data = f"elderly_bind://{user_id}"
+    img = qrcode.make(qr_data, box_size=8, border=2)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    return StreamingResponse(buf, media_type="image/png")
+
+
+@router.get("/family/elderly/{elderly_id}/today", summary="查看老人今日用药")
+async def get_elderly_today(
+    elderly_id: int,
+    current_user: dict = Depends(get_current_user),
+    conn: sqlite3.Connection = Depends(get_db),
+):
+    """子女查看绑定老人的今日用药概览"""
+    # 验证绑定关系
+    cursor = conn.execute(
+        "SELECT id FROM family_bindings WHERE elderly_user_id = ? AND family_user_id = ?",
+        (elderly_id, current_user["id"])
+    )
+    if not cursor.fetchone():
+        raise HTTPException(status_code=403, detail="未绑定该用户")
+    from app.services.medicine_service import MedicineService
+    return MedicineService.get_today_overview(conn, elderly_id)

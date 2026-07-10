@@ -40,6 +40,13 @@
   display: block;
 }
 
+.user-id {
+  font-size: var(--font-xs);
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4rpx;
+  display: block;
+}
+
 .user-age {
   font-size: var(--font-md);
   color: rgba(255, 255, 255, 0.8);

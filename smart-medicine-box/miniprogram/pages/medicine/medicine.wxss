@@ -20,7 +20,7 @@
   flex: 1;
 }
 
-/* 药品网格 */
+/* 药品卡片 */
 .medicine-grid {
   display: flex;
   flex-direction: column;
@@ -35,19 +35,27 @@
   box-shadow: var(--shadow-card);
 }
 
-.medicine-card-item:active {
-  transform: scale(0.98);
-  opacity: 0.8;
+/* 第一行：药品名 + 库存角标 */
+.medicine-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
 }
 
-/* 库存角标 */
+.medicine-name {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+}
+
 .stock-badge {
-  position: absolute;
-  top: var(--space-sm);
-  right: var(--space-sm);
-  padding: 4rpx var(--space-sm);
+  padding: 4rpx var(--space-md);
   border-radius: var(--radius-round);
-  font-size: var(--font-xs);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .stock-badge.low {
@@ -60,16 +68,23 @@
   color: var(--success);
 }
 
-/* 药品图片 */
+/* 第二行：图片 + 信息 */
+.medicine-body {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
 .medicine-image {
-  width: 120rpx;
-  height: 120rpx;
+  width: 80rpx;
+  height: 80rpx;
   border-radius: var(--radius-md);
   background: #F5F7FA;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-md);
+  margin-right: var(--space-md);
+  flex-shrink: 0;
 }
 
 .medicine-image image {
@@ -79,48 +94,44 @@
 }
 
 .medicine-icon {
-  font-size: 60rpx;
+  font-size: 44rpx;
 }
 
-/* 药品信息 */
-.medicine-name-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.medicine-name {
-  font-size: var(--font-xl);
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.medicine-spec {
-  font-size: var(--font-sm);
-  color: var(--text-hint);
-  display: block;
-  margin-top: 4rpx;
+.medicine-info {
+  flex: 1;
 }
 
 .medicine-dosage {
   font-size: var(--font-lg);
   color: var(--primary);
   font-weight: 600;
-  white-space: nowrap;
-  margin-left: 16rpx;
+  display: block;
+}
+
+.medicine-spec {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
+  margin-top: 4rpx;
+}
+
+.medicine-position-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-md);
 }
 
 .medicine-position {
   font-size: var(--font-sm);
-  color: var(--text-secondary);
-  margin-top: 4rpx;
+  color: var(--primary);
+  background: #E6F4FF;
+  padding: 4rpx var(--space-sm);
+  border-radius: var(--radius-round);
 }
 
 /* 操作区 */
 .medicine-actions {
   display: flex;
   gap: var(--space-sm);
-  margin-top: var(--space-md);
   padding-top: var(--space-md);
   border-top: 2rpx solid var(--border);
 }

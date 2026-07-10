@@ -1,33 +1,56 @@
 """
-数据库层 - 使用 Python 内置 sqlite3（零依赖）
+数据库层 - Python 内置 sqlite3（零依赖）
+写操作使用互斥锁，防止 "database is locked"
 """
 import sqlite3
 import os
+import threading
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "smart_medicine_box.db")
 
+# 写操作互斥锁
+_write_lock = threading.Lock()
+
 
 def get_connection():
-    """获取数据库连接"""
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    """获取数据库连接（每个请求独立连接）"""
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=DELETE")
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
-    conn.execute("PRAGMA busy_timeout=5000")
+    conn.execute("PRAGMA busy_timeout=10000")
     return conn
 
 
 def get_db(request=None):
-    """
-    获取当前请求的数据库连接。
-    通过 FastAPI 的 Request.state 存储，确保同一请求共用一个连接。
-    """
+    """FastAPI 依赖注入"""
     from fastapi import Request
-    if request is None:
-        return get_connection()
-    if not hasattr(request.state, 'db_conn'):
-        request.state.db_conn = get_connection()
-    return request.state.db_conn
+    if request and hasattr(request.state, "db_conn"):
+        return request.state.db_conn
+    conn = get_connection()
+    if request:
+        request.state.db_conn = conn
+    return conn
+
+
+def commit_db(conn):
+    """提交事务（带写锁保护）"""
+    with _write_lock:
+        conn.commit()
+
+
+def rollback_db(conn):
+    """回滚事务"""
+    with _write_lock:
+        conn.rollback()
+
+
+def close_db(conn):
+    """关闭连接"""
+    try:
+        conn.close()
+    except Exception:
+        pass
 
 
 def init_db():

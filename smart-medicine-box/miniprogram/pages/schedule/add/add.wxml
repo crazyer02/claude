@@ -91,10 +91,10 @@
       <text class="form-label">生效星期（留空表示每天）</text>
       <view class="week-selector">
         <view
-          class="week-item {{selectedWeeks.indexOf(item.value) >= 0 ? 'active' : ''}}"
+          class="week-item {{weekActive[item.value] ? 'active' : ''}}"
           wx:for="{{weekOptions}}"
           wx:key="value"
-          data-value="{{item.value}}"
+          data-val="{{item.value}}"
           bindtap="onToggleWeek"
         >
           <text>{{item.label}}</text>

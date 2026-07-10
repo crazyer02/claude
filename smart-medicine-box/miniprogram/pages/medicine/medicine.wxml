@@ -24,31 +24,35 @@
       data-id="{{item.id}}"
       bindtap="goEditMedicine"
     >
-      <!-- 库存状态角标 -->
-      <view class="stock-badge {{item.remaining_stock <= item.stock_alert_threshold ? 'low' : 'normal'}}">
-        <text wx:if="{{item.remaining_stock <= item.stock_alert_threshold}}">⚠️ 库存不足</text>
-        <text wx:else>库存 {{item.remaining_stock}}</text>
-      </view>
-
-      <!-- 药品图片 -->
-      <view class="medicine-image">
-        <image wx:if="{{item.image_url}}" src="{{item.image_url}}" mode="aspectFill" />
-        <text wx:else class="medicine-icon">💊</text>
-      </view>
-
-      <!-- 药品信息 -->
-      <view class="medicine-info">
-        <view class="medicine-name-row">
-          <text class="medicine-name">{{item.name}}</text>
-          <text class="medicine-dosage">{{item.dosage}}/次</text>
+      <!-- 第一行：药品名 + 库存 -->
+      <view class="medicine-top-row">
+        <text class="medicine-name">{{item.name}}</text>
+        <view class="stock-badge {{item.remaining_stock <= item.stock_alert_threshold ? 'low' : 'normal'}}">
+          <text wx:if="{{item.remaining_stock <= item.stock_alert_threshold}}">缺货</text>
+          <text wx:else>库存{{item.remaining_stock}}</text>
         </view>
-        <text class="medicine-spec" wx:if="{{item.specification}}">{{item.specification}}</text>
-        <text class="medicine-position" wx:if="{{item.box_position}}">📍 {{item.box_position}}号仓</text>
+      </view>
+
+      <!-- 第二行：图片 + 用量信息 -->
+      <view class="medicine-body">
+        <view class="medicine-image">
+          <image wx:if="{{item.image_url}}" src="{{item.image_url}}" mode="aspectFill" />
+          <text wx:else class="medicine-icon">💊</text>
+        </view>
+        <view class="medicine-info">
+          <text class="medicine-dosage">{{item.dosage}}{{item.unit}}/次</text>
+          <text class="medicine-spec" wx:if="{{item.specification}}">{{item.specification}}</text>
+        </view>
+      </view>
+
+      <!-- 第三行：仓位靠右 -->
+      <view class="medicine-position-row" wx:if="{{item.box_position}}">
+        <text class="medicine-position">📍 {{item.box_position}}号仓</text>
       </view>
 
       <!-- 操作区 -->
       <view class="medicine-actions">
-        <view class="mini-btn" catchtap="onStockAdd" data-medicine="{{item}}">
+        <view class="mini-btn" catchtap="onStockAdd" data-id="{{item.id}}" data-total="{{item.total_stock}}" data-remain="{{item.remaining_stock}}">
           <text>库存+1</text>
         </view>
         <view class="mini-btn outline" catchtap="goSchedule" data-id="{{item.id}}">

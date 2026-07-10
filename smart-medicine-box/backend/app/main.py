@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.config import settings
-from app.database import init_db, get_connection
+from app.database import init_db, get_connection, commit_db, close_db
 from app.routers import user, medicine
 from app.services.reminder_service import ReminderService
 
@@ -64,20 +64,24 @@ app.add_middleware(
 )
 
 
-# 数据库中间件：每个请求自动 commit/rollback/close
+# 数据库中间件：每个请求自动 commit/rollback/close（写操作加锁）
 @app.middleware("http")
 async def db_middleware(request: Request, call_next):
-    response = await call_next(request)
-    conn = getattr(request.state, "db_conn", None)
-    if conn:
-        try:
-            conn.commit()
-        except Exception:
-            conn.rollback()
-        finally:
-            conn.close()
-            request.state.db_conn = None
-    return response
+    conn = get_connection()
+    request.state.db_conn = conn
+    try:
+        response = await call_next(request)
+        commit_db(conn)
+        return response
+    except Exception:
+        with __import__('app.database')._write_lock:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+        raise
+    finally:
+        close_db(conn)
 
 
 app.include_router(user.router)

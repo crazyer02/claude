@@ -10,6 +10,25 @@ const app = getApp();
  * @param {object} options - 请求选项
  * @returns {Promise}
  */
+// 防止 showLoading/hideLoading 不配对
+let loadingCount = 0;
+
+function showLoad(title) {
+  if (loadingCount === 0) {
+    wx.showLoading({ title, mask: true });
+  }
+  loadingCount++;
+}
+
+function hideLoad() {
+  if (loadingCount > 0) {
+    loadingCount--;
+    if (loadingCount === 0) {
+      wx.hideLoading();
+    }
+  }
+}
+
 function request(url, options = {}) {
   const {
     method = 'GET',
@@ -20,7 +39,7 @@ function request(url, options = {}) {
   } = options;
 
   if (showLoading) {
-    wx.showLoading({ title: loadingText, mask: true });
+    showLoad(loadingText);
   }
 
   const header = {
@@ -41,12 +60,11 @@ function request(url, options = {}) {
       data,
       header,
       success: (res) => {
-        if (showLoading) wx.hideLoading();
+        if (showLoading) hideLoad();
 
         if (res.statusCode === 200) {
           resolve(res.data);
         } else if (res.statusCode === 401) {
-          // token 过期，重新登录
           wx.removeStorageSync('token');
           wx.removeStorageSync('userInfo');
           app.globalData.token = null;
@@ -58,8 +76,8 @@ function request(url, options = {}) {
             showCancel: false,
             success: () => {
               app.wxLogin(() => {
-                // 重试请求
-                request(url, options).then(resolve).catch(reject);
+                // 重试时不重复 showLoading
+                request(url, { ...options, showLoading: false }).then(resolve).catch(reject);
               });
             },
           });
@@ -70,7 +88,7 @@ function request(url, options = {}) {
         }
       },
       fail: (err) => {
-        if (showLoading) wx.hideLoading();
+        if (showLoading) hideLoad();
         wx.showToast({ title: '网络异常，请检查网络', icon: 'none', duration: 2500 });
         reject(err);
       },
@@ -120,6 +138,7 @@ const userApi = {
   getFamilyMembers: (elderlyUserId) => get('/user/family/members', { elderly_user_id: elderlyUserId }),
   getBindedElderly: () => get('/user/family/elderly'),
   getElderlyInfo: (elderlyId) => get(`/user/family/elderly/${elderlyId}`),
+  getElderlyToday: (elderlyId) => get(`/user/family/elderly/${elderlyId}/today`),
 };
 
 // ==================== 药品 API ====================

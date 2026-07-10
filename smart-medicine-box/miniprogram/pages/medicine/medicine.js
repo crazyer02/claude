@@ -89,10 +89,14 @@ Page({
    * 库存 +1
    */
   async onStockAdd(e) {
-    const medicine = e.currentTarget.dataset.medicine;
+    const id = parseInt(e.currentTarget.dataset.id);
+    const total = parseInt(e.currentTarget.dataset.total) || 0;
+    const remain = parseInt(e.currentTarget.dataset.remain) || 0;
+    if (!id) return;
     try {
-      await medicineApi.update(medicine.id, {
-        total_stock: medicine.total_stock + 1,
+      await medicineApi.update(id, {
+        total_stock: total + 1,
+        remaining_stock: remain + 1,
       });
       this.loadMedicines();
     } catch (err) {

@@ -2,12 +2,16 @@
  * 首页 - 今日用药概览
  * 面向老年人：大字号、清晰状态、一键标记服药
  */
-const { recordApi } = require('../../utils/api');
+const { recordApi, userApi } = require('../../utils/api');
 const { getPeriodIcon, getPeriodLabel, getStatusConfig, getTodayStr, speakText } = require('../../utils/util');
 const app = getApp();
 
 Page({
   data: {
+    // 查看老人模式
+    elderlyId: null,
+    elderlyName: '',
+
     // 日期
     today: '',
     weekday: '',
@@ -41,9 +45,12 @@ Page({
     selectedMedicine: null,
   },
 
-  onLoad() {
+  onLoad(options) {
+    if (options.elderly_id) {
+      this.setData({ elderlyId: parseInt(options.elderly_id) });
+      wx.setNavigationBarTitle({ title: '家人用药' });
+    }
     this.updateTimeAndGreeting();
-    // 每分钟刷新当前时间
     this.timer = setInterval(() => {
       this.updateTimeAndGreeting();
     }, 60000);
@@ -57,6 +64,31 @@ Page({
     });
     this.updateTimeAndGreeting();
     this.loadTodayOverview();
+  },
+
+  /**
+   * 加载今日概览（支持查看绑定老人）
+   */
+  async loadTodayOverview() {
+    this.setData({ loading: true });
+    try {
+      let overview;
+      if (this.data.elderlyId) {
+        overview = await userApi.getElderlyToday(this.data.elderlyId);
+        this.setData({ elderlyName: overview.name || '' });
+      } else {
+        overview = await recordApi.getToday();
+      }
+      this.setData({
+        overview,
+        today: getTodayStr(),
+        upcomingMedicines: overview.schedules.filter(s => s.status === 'pending').slice(0, 3),
+      });
+    } catch (err) {
+      console.error('加载今日概览失败:', err);
+    } finally {
+      this.setData({ loading: false });
+    }
   },
 
   onUnload() {
@@ -74,34 +106,11 @@ Page({
   },
 
   /**
-   * 加载今日概览数据
+   * 格式化本地时间 "YYYY-MM-DD HH:MM:SS"
    */
-  async loadTodayOverview() {
-    this.setData({ loading: true });
-    try {
-      const overview = await recordApi.getToday();
-      this.setData({
-        overview,
-        today: getTodayStr(),
-        // 计算即将提醒的（pending 状态且时间未过）
-        upcomingMedicines: overview.schedules
-          .filter((s) => s.status === 'pending')
-          .slice(0, 3),
-      });
-
-      // 语音提醒：如果有待服用的药品
-      if (overview.pending_count > 0 && overview.pending_count <= 3) {
-        const names = overview.schedules
-          .filter((s) => s.status === 'pending')
-          .map((s) => s.medicine_name)
-          .join('、');
-        // speakText(`您有${overview.pending_count}种药需要服用：${names}`);
-      }
-    } catch (err) {
-      console.error('加载今日概览失败:', err);
-    } finally {
-      this.setData({ loading: false });
-    }
+  formatLocalTime(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   },
 
   /**
@@ -194,7 +203,7 @@ Page({
         schedule_id: item.schedule_id,
         medicine_id: item.medicine_id,
         scheduled_time: scheduledTime,
-        actual_time: now.toISOString(),
+        actual_time: this.formatLocalTime(now),
         status: 'taken',
       });
       console.log('Record created:', recordResult);

@@ -6,6 +6,9 @@
 
   <!-- ===== 顶部问候区 ===== -->
   <view class="header-section">
+    <view class="elderly-banner" wx:if="{{elderlyId}}">
+      <text>👴 正在查看家人的用药情况</text>
+    </view>
     <view class="greeting">{{greeting}}</view>
     <view class="date-row">
       <text class="date-text">{{today}} {{weekday}}</text>

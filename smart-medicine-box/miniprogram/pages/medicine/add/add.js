@@ -127,18 +127,23 @@ Page({
   },
 
   async onSubmit() {
-    const form = this.data.form;
+    // 防止重复提交
+    if (this.data.submitting) return;
+    this.data.submitting = true;  // 同步锁定
 
+    const form = this.data.form;
     if (!form.name.trim()) {
       wx.showToast({ title: '请输入药品名称', icon: 'none' });
+      this.data.submitting = false;
       return;
     }
     if (!form.dosage.trim()) {
       wx.showToast({ title: '请输入单次用量', icon: 'none' });
+      this.data.submitting = false;
       return;
     }
 
-    this.setData({ submitting: true });
+    this.setData({ submitting: true });  // UI 更新
     const data = this.cleanForm(form);
 
     try {

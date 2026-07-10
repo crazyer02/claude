@@ -34,6 +34,7 @@ class MedicineUpdate(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     total_stock: Optional[int] = Field(None, ge=0)
+    remaining_stock: Optional[int] = Field(None, ge=0)
     stock_alert_threshold: Optional[int] = Field(None, ge=1)
     box_position: Optional[str] = Field(None, max_length=16)
     image_url: Optional[str] = None

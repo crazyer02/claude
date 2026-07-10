@@ -69,15 +69,17 @@ class MedicineService:
         if not update_data:
             return MedicineService.get_medicine(conn, medicine_id, user_id)
 
-        # 库存联动调整：更新 total_stock 时，同比例调整 remaining_stock
-        if "total_stock" in update_data:
+        # 库存联动调整
+        if "remaining_stock" in update_data:
+            # 如果明确传了 remaining，直接用（"库存+1"场景）
+            pass  # 会在下面的通用字段更新中处理
+        elif "total_stock" in update_data:
+            # 只传了 total，按比例缩放 remaining
             old = MedicineService.get_medicine(conn, medicine_id, user_id)
             new_total = update_data["total_stock"]
             if old["total_stock"] > 0:
-                # 同比例缩放 remaining
                 new_remaining = max(0, int(old["remaining_stock"] * new_total / old["total_stock"]))
             else:
-                # 旧库存为 0，remaining 直接跟随 total
                 new_remaining = new_total
             conn.execute("UPDATE medicines SET remaining_stock = ? WHERE id = ?", (new_remaining, medicine_id))
 
@@ -188,7 +190,11 @@ class MedicineService:
         MedicineService.get_medicine(conn, data_dict["medicine_id"], user_id)
 
         status = data_dict.get("status", "taken")
-        actual_time = data_dict.get("actual_time") or (datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") if status == "taken" else None)
+        act = data_dict.get("actual_time")
+        if act and hasattr(act, 'strftime'):
+            actual_time = act.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            actual_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S") if status == "taken" else None
         # 统一用空格格式，与 get_today_overview 的查询格式一致
         sched_time = data_dict["scheduled_time"]
         if hasattr(sched_time, 'strftime'):
@@ -253,7 +259,7 @@ class MedicineService:
     @staticmethod
     def get_today_overview(conn: sqlite3.Connection, user_id: int) -> dict:
         """获取今日用药概览 - 首页核心数据"""
-        today = datetime.utcnow()
+        today = datetime.now()
         today_str = today.strftime("%Y-%m-%d")
         weekday = today.isoweekday()
 
@@ -306,7 +312,7 @@ class MedicineService:
             })
 
         # 过去超过1小时的pending视为missed
-        now = datetime.utcnow()
+        now = datetime.now()
         for item in items:
             if item["status"] == "pending":
                 h, m = item["reminder_time"].split(":")

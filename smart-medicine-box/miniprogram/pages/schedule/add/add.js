@@ -37,14 +37,23 @@ Page({
       { value: '5', label: '周五' }, { value: '6', label: '周六' },
       { value: '7', label: '周日' },
     ],
-    selectedWeeks: [],
+    weekActive: { '1': false, '2': false, '3': false, '4': false, '5': false, '6': false, '7': false },
     submitting: false,
+  },
+
+  // 同步 selectedWeeks 数组 ↔ weekActive 对象
+  syncWeekActive(arr) {
+    const weekActive = { '1': false, '2': false, '3': false, '4': false, '5': false, '6': false, '7': false };
+    (arr || []).forEach(v => { weekActive[v] = true; });
+    return weekActive;
   },
 
   onLoad(options) {
     if (options.id) {
-      this.setData({ isEdit: true, scheduleId: parseInt(options.id) });
+      const sid = parseInt(options.id);
+      this.setData({ isEdit: true, scheduleId: sid });
       wx.setNavigationBarTitle({ title: '编辑用药计划' });
+      this.loadSchedule(sid);
     }
     if (options.medicine_id) {
       this.setData({ 'form.medicine_id': parseInt(options.medicine_id) });
@@ -54,6 +63,33 @@ Page({
   onShow() {
     this.setData({ fontSizeMode: app.globalData.fontSizeMode || 'large' });
     this.loadMedicines();
+  },
+
+  async loadSchedule(sid) {
+    try {
+      const schedules = await scheduleApi.getList();
+      const s = schedules.find(item => item.id === sid);
+      console.log('loadSchedule found:', s);
+      if (s) {
+        const dows = s.days_of_week || '';
+        const arr = dows ? dows.split(',').map(v => v.trim()).filter(Boolean) : [];
+        console.log('days_of_week raw:', JSON.stringify(s.days_of_week), 'arr:', arr);
+        this.setData({
+          'form.medicine_id': s.medicine_id,
+          'form.medicine_name': s.medicine_name || '',
+          'form.period': s.period || 'morning',
+          'form.time_label': s.time_label || '',
+          'form.reminder_time': s.reminder_time || '08:00',
+          'form.dosage_at_time': s.dosage_at_time || '',
+          'form.days_of_week': dows,
+          weekActive: this.syncWeekActive(arr),
+        });
+      } else {
+        console.error('schedule not found, sid:', sid, 'list:', schedules.map(x => x.id));
+      }
+    } catch (err) {
+      console.error('loadSchedule error:', err);
+    }
   },
 
   goAddMedicine() {
@@ -102,32 +138,35 @@ Page({
   },
 
   onToggleWeek(e) {
-    const value = e.currentTarget.dataset.value;
-    let selected = [...this.data.selectedWeeks];
-    const idx = selected.indexOf(value);
-    if (idx >= 0) {
-      selected.splice(idx, 1);
-    } else {
-      selected.push(value);
-    }
+    const val = String(e.currentTarget.dataset.val);
+    const weekActive = { ...this.data.weekActive };
+    weekActive[val] = !weekActive[val];
+    const selected = Object.keys(weekActive).filter(k => weekActive[k]);
     this.setData({
-      selectedWeeks: selected,
+      weekActive,
       'form.days_of_week': selected.sort().join(','),
     });
   },
 
   async onSubmit() {
+    // 防止重复提交
+    if (this.data.submitting) return;
+    this.data.submitting = true;
+
     const form = this.data.form;
     if (!form.medicine_id) {
       wx.showToast({ title: '请选择药品', icon: 'none' });
+      this.data.submitting = false;
       return;
     }
     if (!form.reminder_time) {
       wx.showToast({ title: '请选择提醒时间', icon: 'none' });
+      this.data.submitting = false;
       return;
     }
     if (!form.dosage_at_time) {
       wx.showToast({ title: '请输入该时段用量', icon: 'none' });
+      this.data.submitting = false;
       return;
     }
 

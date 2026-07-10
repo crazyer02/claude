@@ -41,7 +41,7 @@ class UserService:
             # 更新登录时间
             conn.execute(
                 "UPDATE users SET last_login_at = ?, unionid = COALESCE(?, unionid) WHERE id = ?",
-                (datetime.utcnow().isoformat(), unionid, user["id"])
+                (datetime.now().isoformat(), unionid, user["id"])
             )
 
         user_dict = row_to_dict(user)
@@ -121,7 +121,7 @@ class UserService:
         if not user:
             raise ValueError("用户不存在")
 
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        today = datetime.now().strftime("%Y-%m-%d")
         cursor = conn.execute(
             "SELECT status FROM medicine_records WHERE user_id = ? AND scheduled_time LIKE ?",
             (elderly_user_id, f"{today}%")
@@ -147,7 +147,7 @@ class UserService:
         bindings = cursor.fetchall()
 
         result = []
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        today = datetime.now().strftime("%Y-%m-%d")
         for b in bindings:
             eid = b["elderly_user_id"]
             cursor = conn.execute("SELECT * FROM users WHERE id = ?", (eid,))
