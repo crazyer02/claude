@@ -8,35 +8,32 @@
     <large-button text="添加用药计划" type="primary" icon="+" bind:tap="goAddSchedule" customStyle="margin-top: 32rpx;" />
   </view>
 
-  <!-- 按时间段分组 -->
-  <block wx:for="{{['morning', 'noon', 'evening', 'night']}}" wx:key="*this" wx:for-item="period">
-    <view class="period-section" wx:if="{{schedules.filter(function(s){return s.period === period}).length > 0}}">
-      <view class="period-header">
-        <text class="period-icon">{{period === 'morning' ? '🌅' : period === 'noon' ? '☀️' : period === 'evening' ? '🌇' : '🌙'}}</text>
-        <text class="period-label">{{period === 'morning' ? '早上' : period === 'noon' ? '中午' : period === 'evening' ? '晚上' : '睡前'}}</text>
-      </view>
+  <!-- 按时间段分组（数据已在 JS 中预处理） -->
+  <view class="period-section" wx:for="{{scheduleGroups}}" wx:for-item="group" wx:key="periodKey">
+    <view class="period-header">
+      <text class="period-icon">{{group.periodIcon}}</text>
+      <text class="period-label">{{group.periodLabel}}</text>
+    </view>
 
-      <view
-        class="schedule-item"
-        wx:for="{{schedules}}"
-        wx:for-item="s"
-        wx:key="id"
-        wx:if="{{s.period === period}}"
-      >
-        <view class="schedule-time">
-          <text class="time-text">{{s.reminder_time}}</text>
-        </view>
-        <view class="schedule-info">
-          <text class="schedule-medicine">{{s.medicine_name}}</text>
-          <text class="schedule-detail">{{s.dosage_at_time}} · {{s.time_label}}</text>
-        </view>
-        <view class="schedule-actions">
-          <text class="action-edit" data-id="{{s.id}}" bindtap="onEditSchedule">编辑</text>
-          <text class="action-delete" data-id="{{s.id}}" bindtap="onDeleteSchedule">删除</text>
-        </view>
+    <view
+      class="schedule-item"
+      wx:for="{{group.items}}"
+      wx:for-item="s"
+      wx:key="id"
+    >
+      <view class="schedule-time">
+        <text class="time-text">{{s.reminder_time}}</text>
+      </view>
+      <view class="schedule-info">
+        <text class="schedule-medicine">{{s.medicine_name}}</text>
+        <text class="schedule-detail">{{s.dosage_at_time}} · {{s.time_label}}</text>
+      </view>
+      <view class="schedule-actions">
+        <text class="action-edit" data-id="{{s.id}}" bindtap="onEditSchedule">编辑</text>
+        <text class="action-delete" data-id="{{s.id}}" bindtap="onDeleteSchedule">删除</text>
       </view>
     </view>
-  </block>
+  </view>
 
   <view class="fab" bindtap="goAddSchedule">
     <text>+</text>

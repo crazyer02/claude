@@ -24,27 +24,23 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "今日用药",
-        "iconPath": "images/tab-home.png",
-        "selectedIconPath": "images/tab-home-active.png"
+        "text": "今日用药"
+      
       },
       {
         "pagePath": "pages/medicine/medicine",
-        "text": "我的药品",
-        "iconPath": "images/tab-medicine.png",
-        "selectedIconPath": "images/tab-medicine-active.png"
+        "text": "我的药品"
+        
       },
       {
         "pagePath": "pages/history/history",
-        "text": "用药记录",
-        "iconPath": "images/tab-history.png",
-        "selectedIconPath": "images/tab-history-active.png"
+        "text": "用药记录"
+       
       },
       {
         "pagePath": "pages/mine/mine",
-        "text": "我的",
-        "iconPath": "images/tab-mine.png",
-        "selectedIconPath": "images/tab-mine-active.png"
+        "text": "我的"
+       
       }
     ]
   },
