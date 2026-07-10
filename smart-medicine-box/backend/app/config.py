@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "智能药箱"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
+    DEV_MODE: bool = True  # 开发模式：绕过微信登录，用 mock openid
     SECRET_KEY: str = "your-secret-key-change-in-production"
 
     # 数据库配置（开发环境用 SQLite，生产环境用 MySQL）

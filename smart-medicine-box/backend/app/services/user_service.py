@@ -5,6 +5,7 @@ import sqlite3
 from datetime import datetime
 from typing import List
 
+from app.config import settings
 from app.utils.auth import wechat_login, create_access_token
 from app.database import row_to_dict
 
@@ -14,10 +15,15 @@ class UserService:
 
     @staticmethod
     async def login(conn: sqlite3.Connection, code: str):
-        """微信小程序登录"""
-        wx_data = await wechat_login(code)
-        openid = wx_data["openid"]
-        unionid = wx_data.get("unionid")
+        """微信小程序登录（开发模式绕过微信 API）"""
+        if settings.DEV_MODE:
+            # 开发模式：用小程序传来的 code 或随机值作为 openid
+            openid = f"dev_openid_{code}"
+            unionid = f"dev_unionid_{code}"
+        else:
+            wx_data = await wechat_login(code)
+            openid = wx_data["openid"]
+            unionid = wx_data.get("unionid")
 
         # 查找或创建用户
         cursor = conn.execute("SELECT * FROM users WHERE openid = ?", (openid,))

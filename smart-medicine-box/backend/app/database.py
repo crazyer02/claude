@@ -3,32 +3,35 @@
 """
 import sqlite3
 import os
-from contextlib import contextmanager
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "smart_medicine_box.db")
+
+# 线程本地存储，每个请求独立的连接
+import threading
+_local = threading.local()
 
 
 def get_connection():
     """获取数据库连接"""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # 返回字典式行
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
 
-@contextmanager
 def get_db():
-    """数据库会话上下文管理器，用于依赖注入"""
-    conn = get_connection()
-    try:
-        yield conn
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
+    """获取当前请求的数据库连接（由中间件注入到 _local.conn）"""
+    if not hasattr(_local, 'conn') or _local.conn is None:
+        _local.conn = get_connection()
+    return _local.conn
+
+
+def close_db():
+    """关闭当前请求的数据库连接"""
+    if hasattr(_local, 'conn') and _local.conn is not None:
+        _local.conn.close()
+        _local.conn = None
 
 
 def init_db():
@@ -57,7 +60,6 @@ def init_db():
             updated_at TEXT DEFAULT (datetime('now', 'localtime'))
         );
 
-        -- 药品表
         CREATE TABLE IF NOT EXISTS medicines (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -79,7 +81,6 @@ def init_db():
             updated_at TEXT DEFAULT (datetime('now', 'localtime'))
         );
 
-        -- 用药计划表
         CREATE TABLE IF NOT EXISTS medicine_schedules (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             medicine_id INTEGER NOT NULL REFERENCES medicines(id) ON DELETE CASCADE,
@@ -94,7 +95,6 @@ def init_db():
             updated_at TEXT DEFAULT (datetime('now', 'localtime'))
         );
 
-        -- 用药记录表
         CREATE TABLE IF NOT EXISTS medicine_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             schedule_id INTEGER REFERENCES medicine_schedules(id) ON DELETE SET NULL,
@@ -107,7 +107,6 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now', 'localtime'))
         );
 
-        -- 家人绑定表
         CREATE TABLE IF NOT EXISTS family_bindings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             elderly_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -117,7 +116,6 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now', 'localtime'))
         );
 
-        -- 索引
         CREATE INDEX IF NOT EXISTS idx_users_openid ON users(openid);
         CREATE INDEX IF NOT EXISTS idx_medicines_user_id ON medicines(user_id);
         CREATE INDEX IF NOT EXISTS idx_schedules_user_id ON medicine_schedules(user_id);
