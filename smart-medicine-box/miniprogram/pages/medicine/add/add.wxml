@@ -1,0 +1,167 @@
+<!--
+  添加/编辑药品
+-->
+<view class="page-container">
+
+  <view class="card">
+    <view class="card-title">{{isEdit ? '编辑药品' : '添加药品'}}</view>
+
+    <!-- 药品名称 -->
+    <view class="form-group">
+      <text class="form-label">药品名称 <text class="required">*</text></text>
+      <input
+        class="form-input"
+        placeholder="请输入药品名称（如：阿莫西林）"
+        value="{{form.name}}"
+        data-field="name"
+        bindinput="onInput"
+        placeholder-class="placeholder"
+      />
+    </view>
+
+    <!-- 规格 -->
+    <view class="form-group">
+      <text class="form-label">规格</text>
+      <input
+        class="form-input"
+        placeholder="如：10mg/片"
+        value="{{form.specification}}"
+        data-field="specification"
+        bindinput="onInput"
+        placeholder-class="placeholder"
+      />
+    </view>
+
+    <!-- 用量 & 单位 -->
+    <view class="form-row">
+      <view class="form-group flex-2">
+        <text class="form-label">单次用量 <text class="required">*</text></text>
+        <input
+          class="form-input"
+          placeholder="如：1"
+          value="{{form.dosage}}"
+          data-field="dosage"
+          bindinput="onInput"
+          placeholder-class="placeholder"
+        />
+      </view>
+      <view class="form-group flex-1">
+        <text class="form-label">单位</text>
+        <view class="unit-selector">
+          <view
+            class="unit-item {{form.unit === item ? 'active' : ''}}"
+            wx:for="{{unitOptions}}"
+            wx:key="*this"
+            data-value="{{item}}"
+            bindtap="onSelectUnit"
+          >
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 用药频率 -->
+    <view class="form-group">
+      <text class="form-label">用药频率</text>
+      <view class="frequency-selector">
+        <view
+          class="freq-item {{form.frequency === item.value ? 'active' : ''}}"
+          wx:for="{{frequencyOptions}}"
+          wx:key="value"
+          data-value="{{item.value}}"
+          bindtap="onSelectFrequency"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 日期范围 -->
+    <view class="form-row">
+      <view class="form-group flex-1">
+        <text class="form-label">开始日期</text>
+        <picker mode="date" value="{{form.start_date}}" data-field="start_date" bindchange="onDateChange">
+          <view class="form-picker">
+            <text class="{{form.start_date ? '' : 'placeholder'}}">{{form.start_date || '请选择'}}</text>
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-group flex-1">
+        <text class="form-label">结束日期</text>
+        <picker mode="date" value="{{form.end_date}}" data-field="end_date" bindchange="onDateChange">
+          <view class="form-picker">
+            <text class="{{form.end_date ? '' : 'placeholder'}}">{{form.end_date || '请选择'}}</text>
+            <text class="arrow">▼</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 库存 -->
+    <view class="form-group">
+      <text class="form-label">初始库存</text>
+      <input
+        class="form-input"
+        type="number"
+        placeholder="请输入库存数量"
+        value="{{form.total_stock}}"
+        data-field="total_stock"
+        bindinput="onNumberInput"
+        placeholder-class="placeholder"
+      />
+    </view>
+
+    <!-- 库存告警 -->
+    <view class="form-group">
+      <text class="form-label">库存告警阈值（少于该值时提醒）</text>
+      <input
+        class="form-input"
+        type="number"
+        placeholder="默认5"
+        value="{{form.stock_alert_threshold}}"
+        data-field="stock_alert_threshold"
+        bindinput="onNumberInput"
+        placeholder-class="placeholder"
+      />
+    </view>
+
+    <!-- 药箱仓位 -->
+    <view class="form-group">
+      <text class="form-label">药箱仓位</text>
+      <view class="form-picker" bindtap="onSelectPosition">
+        <text class="{{form.box_position ? '' : 'placeholder'}}">
+          {{form.box_position ? form.box_position + '号仓' : '点击选择仓位（1-8）'}}
+        </text>
+        <text class="arrow">▼</text>
+      </view>
+    </view>
+
+    <!-- 备注 -->
+    <view class="form-group">
+      <text class="form-label">备注</text>
+      <textarea
+        class="form-textarea"
+        placeholder="用药说明、注意事项等"
+        value="{{form.notes}}"
+        data-field="notes"
+        bindinput="onInput"
+        placeholder-class="placeholder"
+        maxlength="200"
+      />
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <large-button
+      text="{{isEdit ? '保存修改' : '添加药品'}}"
+      type="primary"
+      disabled="{{submitting}}"
+      loading="{{submitting}}"
+      bind:tap="onSubmit"
+      customStyle="width: 100%;"
+    />
+  </view>
+</view>

@@ -1,0 +1,140 @@
+<!--
+  首页 - 今日用药概览
+  设计重点：大字体、清晰卡片、一键操作
+-->
+<view class="page-container">
+
+  <!-- ===== 顶部问候区 ===== -->
+  <view class="header-section">
+    <view class="greeting">{{greeting}}</view>
+    <view class="date-row">
+      <text class="date-text">{{today}} {{weekday}}</text>
+      <text class="time-text">{{currentTime}}</text>
+    </view>
+  </view>
+
+  <!-- ===== 依从率环形图卡片 ===== -->
+  <view class="card overview-card">
+    <view class="card-title">今日用药概览</view>
+    <view class="overview-stats">
+      <view class="stat-item">
+        <text class="stat-number success">{{overview.taken_count}}</text>
+        <text class="stat-label">已服用</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-number pending">{{overview.pending_count}}</text>
+        <text class="stat-label">待服用</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-number danger">{{overview.missed_count}}</text>
+        <text class="stat-label">未服用</text>
+      </view>
+    </view>
+    <!-- 依从率进度条 -->
+    <view class="progress-section" wx:if="{{overview.total_count > 0}}">
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{overview.adherence_rate}}%"></view>
+      </view>
+      <text class="progress-text">今日依从率 {{overview.adherence_rate}}%</text>
+    </view>
+  </view>
+
+  <!-- ===== 用药清单 ===== -->
+  <view class="card medicine-list-card">
+    <view class="card-title">今日用药清单</view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{overview.schedules.length === 0 && !loading}}">
+      <text class="icon">💊</text>
+      <text class="text">今天没有用药计划</text>
+      <text class="sub-text">点击下方按钮添加药品</text>
+      <large-button
+        text="添加药品"
+        type="primary"
+        icon="+"
+        bind:tap="goAddMedicine"
+        customStyle="margin-top: 32rpx;"
+      />
+    </view>
+
+    <!-- 用药列表 -->
+    <view class="medicine-list" wx:if="{{overview.schedules.length > 0}}">
+      <view
+        class="medicine-item {{item.status}}"
+        wx:for="{{overview.schedules}}"
+        wx:key="schedule_id"
+      >
+        <!-- 左侧：时段图标 -->
+        <view class="item-icon">
+          <text class="period-icon">{{item.period === 'morning' ? '🌅' : item.period === 'noon' ? '☀️' : item.period === 'evening' ? '🌇' : '🌙'}}</text>
+          <text class="period-time">{{item.reminder_time}}</text>
+        </view>
+
+        <!-- 中间：药品信息 -->
+        <view class="item-info">
+          <text class="item-name">{{item.medicine_name}}</text>
+          <text class="item-dosage">{{item.dosage_at_time}} · {{item.time_label}}</text>
+          <text class="item-position" wx:if="{{item.box_position}}">📍 {{item.box_position}}号仓</text>
+        </view>
+
+        <!-- 右侧：操作按钮 -->
+        <view class="item-action">
+          <!-- 待服用 -->
+          <view
+            wx:if="{{item.status === 'pending'}}"
+            class="btn-take"
+            data-item="{{item}}"
+            bindtap="onTakeMedicine"
+          >
+            <text class="btn-take-text">我吃了</text>
+          </view>
+
+          <!-- 已服用 -->
+          <view wx:if="{{item.status === 'taken'}}" class="status-badge taken">
+            <text>✅ 已服用</text>
+          </view>
+
+          <!-- 未服用 -->
+          <view wx:if="{{item.status === 'missed'}}" class="status-badge missed">
+            <text>❌ 未服用</text>
+          </view>
+
+          <!-- 已跳过 -->
+          <view wx:if="{{item.status === 'skipped'}}" class="status-badge skipped">
+            <text>⏭️ 已跳过</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 快捷操作 ===== -->
+  <view class="quick-actions">
+    <view class="action-btn" bindtap="goHistory">
+      <text class="action-icon">📋</text>
+      <text class="action-text">用药记录</text>
+    </view>
+    <view class="action-btn" bindtap="goFamily">
+      <text class="action-icon">👨‍👩‍👧</text>
+      <text class="action-text">家人绑定</text>
+    </view>
+  </view>
+
+</view>
+
+<!-- ===== 确认服药弹窗 ===== -->
+<reminder-popup
+  show="{{showTakePopup}}"
+  medicine="{{selectedMedicine}}"
+  bind:confirm="confirmTakeMedicine"
+  bind:skip="skipMedicine"
+  bind:close="closePopup"
+/>
+
+<!-- 加载中 -->
+<view class="loading-mask" wx:if="{{loading}}">
+  <view class="loading-spinner"></view>
+  <text class="loading-text">加载中...</text>
+</view>

@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "large-button": "/components/large-button/large-button"
+  },
+  "navigationBarTitleText": "添加用药计划"
+}

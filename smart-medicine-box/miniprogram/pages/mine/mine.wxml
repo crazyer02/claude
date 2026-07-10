@@ -1,0 +1,78 @@
+<!-- 个人中心 -->
+<view class="page-container">
+
+  <!-- 用户信息卡片 -->
+  <view class="user-card" wx:if="{{userInfo}}">
+    <image class="user-avatar" src="{{userInfo.avatar_url || '/images/default-avatar.png'}}" mode="aspectFill" />
+    <view class="user-info">
+      <text class="user-name">{{userInfo.nickname || '未设置昵称'}}</text>
+      <text class="user-phone" wx:if="{{userInfo.phone}}">📱 {{userInfo.phone}}</text>
+    </view>
+    <view class="edit-btn" bindtap="onEditProfile">
+      <text>编辑</text>
+    </view>
+  </view>
+
+  <!-- 未登录 -->
+  <view class="user-card" wx:else>
+    <view class="login-card" bindtap="onLogin">
+      <text class="login-icon">👤</text>
+      <text class="login-text">点击登录</text>
+    </view>
+  </view>
+
+  <!-- 字体大小设置 -->
+  <view class="card">
+    <view class="card-title">字体大小</view>
+    <text class="section-desc">根据视力情况选择合适的字体大小</text>
+    <view class="font-size-selector">
+      <view
+        class="font-option {{fontSizeMode === 'normal' ? 'active' : ''}}"
+        data-mode="normal"
+        bindtap="onSetFontSize"
+      >
+        <text class="font-sample" style="font-size: 28rpx;">标准</text>
+      </view>
+      <view
+        class="font-option {{fontSizeMode === 'large' ? 'active' : ''}}"
+        data-mode="large"
+        bindtap="onSetFontSize"
+      >
+        <text class="font-sample" style="font-size: 36rpx;">大号</text>
+      </view>
+      <view
+        class="font-option {{fontSizeMode === 'xlarge' ? 'active' : ''}}"
+        data-mode="xlarge"
+        bindtap="onSetFontSize"
+      >
+        <text class="font-sample" style="font-size: 44rpx;">特大</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="card menu-card">
+    <view class="menu-item" bindtap="goSchedule">
+      <text class="menu-icon">📅</text>
+      <text class="menu-text">用药计划</text>
+      <text class="menu-arrow">▶</text>
+    </view>
+    <view class="menu-item" bindtap="goFamily">
+      <text class="menu-icon">👨‍👩‍👧</text>
+      <text class="menu-text">家人绑定</text>
+      <text class="menu-arrow">▶</text>
+    </view>
+    <view class="menu-item" bindtap="onSubscribeMessage">
+      <text class="menu-icon">🔔</text>
+      <text class="menu-text">提醒通知设置</text>
+      <text class="menu-arrow">▶</text>
+    </view>
+    <view class="menu-item" bindtap="onAbout">
+      <text class="menu-icon">ℹ️</text>
+      <text class="menu-text">关于智能药箱</text>
+      <text class="menu-arrow">▶</text>
+    </view>
+  </view>
+
+  <view class="version-text">智能药箱 v{{appVersion}}</view>
+</view>

@@ -1,0 +1,27 @@
+<!-- medicine-card 药品卡片 -->
+<view class="med-card" bindtap="onTapCard">
+  <!-- 库存告警 -->
+  <view class="stock-alert" wx:if="{{medicine.remaining_stock <= medicine.stock_alert_threshold}}">
+    <text>⚠️ 库存不足 (剩{{medicine.remaining_stock}}{{medicine.unit}})</text>
+  </view>
+
+  <view class="med-body">
+    <view class="med-image">
+      <image wx:if="{{medicine.image_url}}" src="{{medicine.image_url}}" mode="aspectFill" />
+      <text wx:else class="med-placeholder">💊</text>
+    </view>
+
+    <view class="med-info">
+      <text class="med-name">{{medicine.name}}</text>
+      <text class="med-spec" wx:if="{{medicine.specification}}">{{medicine.specification}}</text>
+      <text class="med-dosage">{{medicine.dosage}}{{medicine.unit}}/次</text>
+      <text class="med-stock">库存: {{medicine.remaining_stock}}{{medicine.unit}}</text>
+    </view>
+  </view>
+
+  <view class="med-actions" wx:if="{{showActions}}">
+    <view class="med-btn" catchtap="onSchedule">📅 计划</view>
+    <view class="med-btn" catchtap="onEdit">✏️ 编辑</view>
+    <view class="med-btn danger" catchtap="onDelete">🗑️ 删除</view>
+  </view>
+</view>

@@ -1,0 +1,36 @@
+<!-- reminder-popup 服药确认弹窗 -->
+<view class="popup-mask" wx:if="{{show}}" bindtap="onClose">
+  <view class="popup-content" wx:if="{{medicine}}" catchtap="preventBubble">
+    <!-- 顶部图标 -->
+    <view class="popup-icon">
+      <text>{{medicine.period === 'morning' ? '🌅' : medicine.period === 'noon' ? '☀️' : medicine.period === 'evening' ? '🌇' : '🌙'}}</text>
+    </view>
+
+    <!-- 标题 -->
+    <view class="popup-title">该吃药了</view>
+
+    <!-- 药品信息 -->
+    <view class="popup-medicine">
+      <text class="popup-name">{{medicine.medicine_name}}</text>
+      <text class="popup-dosage">{{medicine.dosage_at_time}}</text>
+      <text class="popup-time">{{medicine.reminder_time}} · {{medicine.time_label || ''}}</text>
+      <text class="popup-position" wx:if="{{medicine.box_position}}">📍 请在 {{medicine.box_position}} 号仓取药</text>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="popup-actions">
+      <view class="popup-btn primary" bindtap="onConfirm">
+        <text class="popup-btn-icon">✅</text>
+        <text class="popup-btn-text">我吃过了</text>
+      </view>
+      <view class="popup-btn skip" bindtap="onSkip">
+        <text class="popup-btn-icon">⏭️</text>
+        <text class="popup-btn-text">跳过</text>
+      </view>
+      <view class="popup-btn later" bindtap="onClose">
+        <text class="popup-btn-icon">⏰</text>
+        <text class="popup-btn-text">稍后提醒</text>
+      </view>
+    </view>
+  </view>
+</view>

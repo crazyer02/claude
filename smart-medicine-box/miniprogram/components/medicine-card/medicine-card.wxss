@@ -1,0 +1,101 @@
+.med-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+}
+
+.stock-alert {
+  background: #FFF2F0;
+  color: #FF4D4F;
+  font-size: 26rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  margin-bottom: 16rpx;
+}
+
+.med-body {
+  display: flex;
+  align-items: center;
+}
+
+.med-image {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 16rpx;
+  background: #F5F7FA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+}
+
+.med-image image {
+  width: 100%;
+  height: 100%;
+  border-radius: 16rpx;
+}
+
+.med-placeholder {
+  font-size: 56rpx;
+}
+
+.med-info {
+  flex: 1;
+}
+
+.med-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+  display: block;
+}
+
+.med-spec {
+  font-size: 26rpx;
+  color: #999999;
+  display: block;
+  margin-top: 4rpx;
+}
+
+.med-dosage {
+  font-size: 30rpx;
+  color: #4A90D9;
+  font-weight: 600;
+  display: block;
+  margin-top: 8rpx;
+}
+
+.med-stock {
+  font-size: 26rpx;
+  color: #666666;
+  margin-top: 4rpx;
+}
+
+.med-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx solid #E8E8E8;
+}
+
+.med-btn {
+  flex: 1;
+  text-align: center;
+  padding: 12rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  background: #E6F4FF;
+  color: #4A90D9;
+}
+
+.med-btn.danger {
+  background: #FFF2F0;
+  color: #FF4D4F;
+}
+
+.med-btn:active {
+  opacity: 0.7;
+}

@@ -1,0 +1,105 @@
+<!-- 家人绑定 -->
+<view class="page-container">
+
+  <!-- ===== 老年用户视图：我的家人 ===== -->
+  <view wx:if="{{userType === 'elderly'}}">
+    <view class="card">
+      <view class="card-title">我的家人</view>
+      <view class="info-text">家人绑定后可以远程查看您的用药情况</view>
+
+      <view wx:if="{{familyMembers.length === 0}}" class="empty-state">
+        <text class="icon">👨‍👩‍👧</text>
+        <text class="text">还没有家人绑定</text>
+        <text class="sub-text">让您的子女扫描小程序码绑定</text>
+      </view>
+
+      <view class="member-list">
+        <view class="member-item" wx:for="{{familyMembers}}" wx:key="id">
+          <image class="member-avatar" src="{{item.avatar_url || '/images/default-avatar.png'}}" mode="aspectFill" />
+          <text class="member-name">{{item.nickname || '家人'}}</text>
+          <text class="member-relation">{{item.relationship}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 子女用户视图：绑定的老人 ===== -->
+  <view wx:if="{{userType === 'family'}}">
+    <view class="card">
+      <view class="card-title">我关注的老人</view>
+
+      <view wx:if="{{bindedElderly.length === 0 && !loading}}" class="empty-state">
+        <text class="icon">👴</text>
+        <text class="text">还没有绑定老人</text>
+        <text class="sub-text">绑定后可远程查看老人用药情况</text>
+      </view>
+
+      <view class="elderly-list">
+        <view
+          class="elderly-item"
+          wx:for="{{bindedElderly}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="goElderlyDetail"
+        >
+          <image class="elderly-avatar" src="{{item.avatar_url || '/images/default-avatar.png'}}" mode="aspectFill" />
+          <view class="elderly-info">
+            <text class="elderly-name">{{item.nickname || '老人'}} ({{item.age || '未知'}}岁)</text>
+            <text class="elderly-contact" wx:if="{{item.emergency_contact}}">📞 {{item.emergency_contact}}</text>
+          </view>
+          <!-- 今日依从率 -->
+          <view class="elderly-rate">
+            <text class="rate-number" style="color: {{item.today_adherence_rate >= 80 ? '#52C41A' : item.today_adherence_rate >= 50 ? '#FAAD14' : '#FF4D4F'}}">
+              {{item.today_adherence_rate}}%
+            </text>
+            <text class="rate-label">今日依从</text>
+          </view>
+          <text class="arrow-right">▶</text>
+        </view>
+      </view>
+
+      <!-- 绑定按钮 -->
+      <view class="bind-btn-wrap">
+        <large-button text="绑定老人" type="outline" icon="+" bind:tap="showBind" customStyle="width: 100%;" />
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 绑定弹窗 ===== -->
+  <view class="modal-mask" wx:if="{{showBindForm}}" bindtap="hideBind">
+    <view class="modal-content" catchtap="">
+      <view class="modal-title">绑定老人</view>
+
+      <view class="form-group">
+        <text class="form-label">老人用户ID</text>
+        <input
+          class="form-input"
+          type="number"
+          placeholder="请输入老人的用户ID"
+          value="{{elderlyUserId}}"
+          bindinput="onElderlyIdInput"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">您与老人的关系</text>
+        <view class="relation-selector">
+          <view
+            class="relation-item {{relationship === item.value ? 'active' : ''}}"
+            wx:for="{{relationOptions}}"
+            wx:key="value"
+            data-value="{{item.value}}"
+            bindtap="onSelectRelation"
+          >
+            <text>{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="modal-actions">
+        <large-button text="取消" type="outline" bind:tap="hideBind" customStyle="flex: 1;" />
+        <large-button text="确认绑定" type="primary" bind:tap="onSubmitBind" customStyle="flex: 1; margin-left: 16rpx;" />
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,156 @@
+.info-text {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
+  margin-bottom: var(--space-md);
+}
+
+/* 家人列表 */
+.member-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.member-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.member-avatar {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: #F5F7FA;
+}
+
+.member-name {
+  font-size: var(--font-md);
+  font-weight: 500;
+  margin-top: var(--space-xs);
+}
+
+.member-relation {
+  font-size: var(--font-xs);
+  color: var(--primary);
+  background: #E6F4FF;
+  padding: 2rpx var(--space-sm);
+  border-radius: var(--radius-round);
+  margin-top: 4rpx;
+}
+
+/* 老人列表 */
+.elderly-item {
+  display: flex;
+  align-items: center;
+  padding: var(--space-md);
+  background: #FAFBFC;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+}
+
+.elderly-item:active {
+  opacity: 0.7;
+}
+
+.elderly-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #F5F7FA;
+}
+
+.elderly-info {
+  flex: 1;
+  margin: 0 var(--space-md);
+}
+
+.elderly-name {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  display: block;
+}
+
+.elderly-contact {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
+}
+
+.elderly-rate {
+  text-align: center;
+  margin-right: var(--space-sm);
+}
+
+.rate-number {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  display: block;
+}
+
+.rate-label {
+  font-size: var(--font-xs);
+  color: var(--text-hint);
+}
+
+.arrow-right {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
+}
+
+.bind-btn-wrap {
+  margin-top: var(--space-lg);
+}
+
+/* 绑定弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 600rpx;
+  background: #FFFFFF;
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+}
+
+.modal-title {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: var(--space-lg);
+}
+
+.relation-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.relation-item {
+  padding: var(--space-sm) var(--space-md);
+  border: 3rpx solid var(--border);
+  border-radius: var(--radius-round);
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.relation-item.active {
+  border-color: var(--primary);
+  background: #E6F4FF;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  margin-top: var(--space-lg);
+}

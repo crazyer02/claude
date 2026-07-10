@@ -1,0 +1,303 @@
+/**
+ * 首页样式
+ */
+
+/* ===== 顶部问候区 ===== */
+.header-section {
+  padding: var(--space-lg) 0;
+}
+
+.greeting {
+  font-size: var(--font-xxl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.date-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: var(--space-xs);
+}
+
+.date-text {
+  font-size: var(--font-lg);
+  color: var(--text-secondary);
+}
+
+.time-text {
+  font-size: var(--font-xxl);
+  font-weight: 700;
+  color: var(--primary);
+  margin-left: var(--space-md);
+}
+
+/* ===== 概览卡片 ===== */
+.overview-card {
+  background: linear-gradient(135deg, #4A90D9 0%, #6BA5E7 100%);
+  color: #FFFFFF;
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+}
+
+.overview-card .card-title {
+  color: #FFFFFF;
+  opacity: 0.9;
+}
+
+.overview-card .card-title::before {
+  background: #FFFFFF;
+}
+
+.overview-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: var(--space-lg) 0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-number {
+  font-size: 64rpx;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-number.success { color: #B7EB8F; }
+.stat-number.pending { color: #FFE58F; }
+.stat-number.danger { color: #FFA39E; }
+
+.stat-label {
+  font-size: var(--font-md);
+  opacity: 0.9;
+  margin-top: var(--space-xs);
+}
+
+.stat-divider {
+  width: 2rpx;
+  height: 60rpx;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 进度条 */
+.progress-section {
+  margin-top: var(--space-md);
+}
+
+.progress-bar {
+  height: 16rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-round);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #B7EB8F;
+  border-radius: var(--radius-round);
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  font-size: var(--font-sm);
+  opacity: 0.9;
+  margin-top: var(--space-xs);
+  display: block;
+  text-align: right;
+}
+
+/* ===== 用药清单 ===== */
+.medicine-list-card {
+  padding-top: var(--space-lg);
+}
+
+.medicine-item {
+  display: flex;
+  align-items: center;
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
+  background: #FAFBFC;
+  border-radius: var(--radius-md);
+  border-left: 8rpx solid var(--border);
+  transition: all 0.3s;
+}
+
+.medicine-item.taken {
+  border-left-color: var(--success);
+  opacity: 0.7;
+}
+
+.medicine-item.missed {
+  border-left-color: var(--danger);
+}
+
+.medicine-item.pending {
+  border-left-color: var(--primary);
+}
+
+/* 左侧图标 */
+.item-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100rpx;
+}
+
+.period-icon {
+  font-size: 44rpx;
+}
+
+.period-time {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* 中间信息 */
+.item-info {
+  flex: 1;
+  margin: 0 var(--space-md);
+}
+
+.item-name {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.item-dosage {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 4rpx;
+}
+
+.item-position {
+  font-size: var(--font-sm);
+  color: var(--primary);
+  margin-top: 4rpx;
+}
+
+/* 右侧操作 */
+.item-action {
+  min-width: 140rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-take {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--primary);
+  border-radius: var(--radius-round);
+  min-height: 72rpx;
+  min-width: 130rpx;
+}
+
+.btn-take:active {
+  transform: scale(0.94);
+  opacity: 0.9;
+}
+
+.btn-take-text {
+  color: #FFFFFF;
+  font-size: var(--font-md);
+  font-weight: 600;
+}
+
+.status-badge {
+  font-size: var(--font-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-round);
+}
+
+.status-badge.taken {
+  background: #F6FFED;
+  color: var(--success);
+}
+
+.status-badge.missed {
+  background: #FFF2F0;
+  color: var(--danger);
+}
+
+.status-badge.skipped {
+  background: #FFFBE6;
+  color: var(--warning);
+}
+
+/* ===== 快捷操作 ===== */
+.quick-actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.action-btn:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+
+.action-icon {
+  font-size: 56rpx;
+  margin-bottom: var(--space-sm);
+}
+
+.action-text {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ===== 加载状态 ===== */
+.loading-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 6rpx solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  margin-top: var(--space-md);
+}

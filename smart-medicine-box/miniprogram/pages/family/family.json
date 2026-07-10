@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "large-button": "/components/large-button/large-button"
+  },
+  "navigationBarTitleText": "家人绑定"
+}

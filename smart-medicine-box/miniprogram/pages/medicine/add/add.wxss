@@ -1,0 +1,65 @@
+.required {
+  color: var(--danger);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--space-md);
+}
+
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }
+
+.placeholder {
+  color: var(--text-hint);
+  font-size: var(--font-md);
+}
+
+/* 频率选择器 */
+.frequency-selector {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.freq-item {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-sm);
+  border: 3rpx solid var(--border);
+  border-radius: var(--radius-round);
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.freq-item.active {
+  border-color: var(--primary);
+  background: #E6F4FF;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* 单位选择器 */
+.unit-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.unit-item {
+  padding: var(--space-xs) var(--space-sm);
+  border: 2rpx solid var(--border);
+  border-radius: var(--radius-round);
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+.unit-item.active {
+  border-color: var(--primary);
+  background: #E6F4FF;
+  color: var(--primary);
+}
+
+/* 提交区 */
+.submit-section {
+  padding: var(--space-lg) 0;
+}

@@ -1,0 +1,74 @@
+.period-section {
+  margin-bottom: var(--space-lg);
+}
+
+.period-header {
+  display: flex;
+  align-items: center;
+  padding: var(--space-md) 0;
+}
+
+.period-icon {
+  font-size: var(--font-xl);
+  margin-right: var(--space-sm);
+}
+
+.period-label {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-sm);
+  box-shadow: var(--shadow-card);
+}
+
+.schedule-time {
+  min-width: 120rpx;
+}
+
+.time-text {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.schedule-info {
+  flex: 1;
+  margin: 0 var(--space-md);
+}
+
+.schedule-medicine {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  display: block;
+}
+
+.schedule-detail {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin-top: 4rpx;
+}
+
+.schedule-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.action-edit {
+  font-size: var(--font-sm);
+  color: var(--primary);
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.action-delete {
+  font-size: var(--font-sm);
+  color: var(--danger);
+  padding: var(--space-xs) var(--space-sm);
+}

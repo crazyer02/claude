@@ -1,0 +1,9 @@
+{
+  "usingComponents": {
+    "large-button": "/components/large-button/large-button",
+    "reminder-popup": "/components/reminder-popup/reminder-popup"
+  },
+  "navigationBarTitleText": "智能药箱",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

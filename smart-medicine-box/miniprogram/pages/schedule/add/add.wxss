@@ -1,0 +1,111 @@
+.required { color: var(--danger); }
+.placeholder { color: var(--text-hint); font-size: var(--font-md); }
+
+/* 药品选择器 */
+.medicine-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.medicine-option {
+  padding: var(--space-sm) var(--space-md);
+  border: 3rpx solid var(--border);
+  border-radius: var(--radius-round);
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.medicine-option.active {
+  border-color: var(--primary);
+  background: #E6F4FF;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* 时段选择器 */
+.period-selector {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.period-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-md);
+  border: 3rpx solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-md);
+}
+
+.period-option.active {
+  border-color: var(--primary);
+  background: #E6F4FF;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.period-icon {
+  font-size: var(--font-xl);
+  margin-bottom: 4rpx;
+}
+
+/* 标签选择器 */
+.tag-selector {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.tag-item {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-sm);
+  border: 3rpx solid var(--border);
+  border-radius: var(--radius-round);
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.tag-item.active {
+  border-color: var(--primary);
+  background: #E6F4FF;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* 时间显示 */
+.time-display {
+  font-size: var(--font-xxl);
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* 星期选择器 */
+.week-selector {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.week-item {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-xs);
+  border: 2rpx solid var(--border);
+  border-radius: var(--radius-round);
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+}
+
+.week-item.active {
+  border-color: var(--primary);
+  background: #E6F4FF;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* 提交 */
+.submit-section {
+  padding: var(--space-lg) 0;
+}

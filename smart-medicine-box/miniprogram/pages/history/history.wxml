@@ -1,0 +1,52 @@
+<!-- 用药记录 -->
+<view class="page-container">
+
+  <!-- 日期导航 -->
+  <view class="date-nav">
+    <view class="date-arrow" bindtap="goPrevDay"><text>◀</text></view>
+    <picker mode="date" value="{{selectedDate}}" bindchange="onDateChange">
+      <view class="date-display">
+        <text class="date-text">{{selectedDate}}</text>
+        <text class="date-arrow-down">▼</text>
+      </view>
+    </picker>
+    <view class="date-arrow" bindtap="goNextDay"><text>▶</text></view>
+  </view>
+
+  <!-- 状态筛选 -->
+  <view class="status-filter">
+    <view
+      class="filter-item {{selectedStatus === item.value ? 'active' : ''}}"
+      wx:for="{{statusOptions}}"
+      wx:key="value"
+      data-status="{{item.value}}"
+      bindtap="onStatusChange"
+    >
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <!-- 记录列表 -->
+  <view wx:if="{{records.length === 0 && !loading}}" class="empty-state">
+    <text class="icon">📋</text>
+    <text class="text">暂无用药记录</text>
+  </view>
+
+  <view class="record-list">
+    <view class="record-item" wx:for="{{records}}" wx:key="id">
+      <view class="record-left">
+        <text class="record-medicine">{{item.medicine_name}}</text>
+        <text class="record-dosage">{{item.medicine_dosage}}</text>
+        <text class="record-time">计划: {{item.scheduled_time}}</text>
+        <text class="record-actual" wx:if="{{item.actual_time}}">实际: {{item.actual_time}}</text>
+      </view>
+      <view class="record-right">
+        <view class="status-tag {{item.status}}">
+          <text wx:if="{{item.status === 'taken'}}">✅ 已服用</text>
+          <text wx:elif="{{item.status === 'missed'}}">❌ 未服用</text>
+          <text wx:else>⏭️ 已跳过</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

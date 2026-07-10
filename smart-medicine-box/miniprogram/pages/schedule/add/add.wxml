@@ -1,0 +1,109 @@
+<!-- 添加/编辑用药计划 -->
+<view class="page-container">
+
+  <view class="card">
+    <view class="card-title">{{isEdit ? '编辑用药计划' : '添加用药计划'}}</view>
+
+    <!-- 选择药品 -->
+    <view class="form-group">
+      <text class="form-label">选择药品 <text class="required">*</text></text>
+      <view class="medicine-selector">
+        <view
+          class="medicine-option {{form.medicine_id === item.id ? 'active' : ''}}"
+          wx:for="{{medicines}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          data-name="{{item.name}}"
+          bindtap="onSelectMedicine"
+        >
+          <text>{{item.name}} ({{item.dosage}}/次)</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 时段选择 -->
+    <view class="form-group">
+      <text class="form-label">服药时段</text>
+      <view class="period-selector">
+        <view
+          class="period-option {{form.period === item.value ? 'active' : ''}}"
+          wx:for="{{periodOptions}}"
+          wx:key="value"
+          data-value="{{item.value}}"
+          bindtap="onSelectPeriod"
+        >
+          <text class="period-icon">{{item.icon}}</text>
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 具体时间标签 -->
+    <view class="form-group">
+      <text class="form-label">服用时机</text>
+      <view class="tag-selector">
+        <view
+          class="tag-item {{form.time_label === item ? 'active' : ''}}"
+          wx:for="{{timeLabels[form.period]}}"
+          wx:key="*this"
+          data-value="{{item}}"
+          bindtap="onSelectTimeLabel"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提醒时间 -->
+    <view class="form-group">
+      <text class="form-label">提醒时间 <text class="required">*</text></text>
+      <picker mode="time" value="{{form.reminder_time}}" bindchange="onTimeChange">
+        <view class="form-picker">
+          <text class="time-display">{{form.reminder_time}}</text>
+          <text class="arrow">🕐</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 该时段用量 -->
+    <view class="form-group">
+      <text class="form-label">该时段用量 <text class="required">*</text></text>
+      <input
+        class="form-input"
+        placeholder="如：1片"
+        value="{{form.dosage_at_time}}"
+        data-field="dosage_at_time"
+        bindinput="onInput"
+        placeholder-class="placeholder"
+      />
+    </view>
+
+    <!-- 生效星期 -->
+    <view class="form-group">
+      <text class="form-label">生效星期（留空表示每天）</text>
+      <view class="week-selector">
+        <view
+          class="week-item {{selectedWeeks.indexOf(item.value) >= 0 ? 'active' : ''}}"
+          wx:for="{{weekOptions}}"
+          wx:key="value"
+          data-value="{{item.value}}"
+          bindtap="onToggleWeek"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <large-button
+      text="{{isEdit ? '保存修改' : '创建用药计划'}}"
+      type="primary"
+      disabled="{{submitting}}"
+      loading="{{submitting}}"
+      bind:tap="onSubmit"
+      customStyle="width: 100%;"
+    />
+  </view>
+</view>

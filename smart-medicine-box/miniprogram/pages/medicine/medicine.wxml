@@ -1,0 +1,66 @@
+<!--
+  我的药品 - 药品列表管理
+-->
+<view class="page-container">
+
+  <!-- 库存不足提醒 -->
+  <view class="alert-banner" wx:if="{{showLowStockAlert}}">
+    <text class="alert-icon">⚠️</text>
+    <text class="alert-text">有 {{lowStockMedicines.length}} 种药品库存不足，请及时补充</text>
+  </view>
+
+  <!-- 药品列表 -->
+  <view wx:if="{{medicines.length === 0 && !loading}}" class="empty-state">
+    <text class="icon">💊</text>
+    <text class="text">还没有添加药品</text>
+    <text class="sub-text">点击右下角 + 按钮添加</text>
+  </view>
+
+  <view class="medicine-grid">
+    <view
+      class="medicine-card-item"
+      wx:for="{{medicines}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="goEditMedicine"
+    >
+      <!-- 库存状态角标 -->
+      <view class="stock-badge {{item.remaining_stock <= item.stock_alert_threshold ? 'low' : 'normal'}}">
+        <text wx:if="{{item.remaining_stock <= item.stock_alert_threshold}}">⚠️ 库存不足</text>
+        <text wx:else>库存 {{item.remaining_stock}}</text>
+      </view>
+
+      <!-- 药品图片 -->
+      <view class="medicine-image">
+        <image wx:if="{{item.image_url}}" src="{{item.image_url}}" mode="aspectFill" />
+        <text wx:else class="medicine-icon">💊</text>
+      </view>
+
+      <!-- 药品信息 -->
+      <view class="medicine-info">
+        <text class="medicine-name">{{item.name}}</text>
+        <text class="medicine-spec" wx:if="{{item.specification}}">{{item.specification}}</text>
+        <text class="medicine-dosage">{{item.dosage}}/次</text>
+        <text class="medicine-position" wx:if="{{item.box_position}}">📍 {{item.box_position}}号仓</text>
+      </view>
+
+      <!-- 操作区 -->
+      <view class="medicine-actions">
+        <view class="mini-btn" catchtap="onStockAdd" data-medicine="{{item}}">
+          <text>库存+1</text>
+        </view>
+        <view class="mini-btn outline" catchtap="goSchedule" data-id="{{item.id}}">
+          <text>计划</text>
+        </view>
+        <view class="mini-btn danger" catchtap="onDeleteMedicine" data-id="{{item.id}}">
+          <text>删除</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 浮动添加按钮 -->
+  <view class="fab" bindtap="goAddMedicine">
+    <text>+</text>
+  </view>
+</view>

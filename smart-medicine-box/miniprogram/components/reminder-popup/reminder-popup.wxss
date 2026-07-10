@@ -1,0 +1,156 @@
+/* ===== 弹窗遮罩 ===== */
+.popup-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== 弹窗内容 ===== */
+.popup-content {
+  width: 600rpx;
+  max-width: 90vw;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 64rpx 48rpx 48rpx;
+  text-align: center;
+  animation: slideUp 0.4s ease;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100rpx);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ===== 顶部图标 ===== */
+.popup-icon {
+  font-size: 100rpx;
+  margin-bottom: 16rpx;
+}
+
+/* ===== 标题 ===== */
+.popup-title {
+  font-size: 52rpx;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin-bottom: 32rpx;
+}
+
+/* ===== 药品信息 ===== */
+.popup-medicine {
+  background: #F5F7FA;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 40rpx;
+}
+
+.popup-name {
+  font-size: 42rpx;
+  font-weight: 700;
+  color: #4A90D9;
+  display: block;
+}
+
+.popup-dosage {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  display: block;
+  margin-top: 8rpx;
+}
+
+.popup-time {
+  font-size: 30rpx;
+  color: #666666;
+  display: block;
+  margin-top: 8rpx;
+}
+
+.popup-position {
+  font-size: 30rpx;
+  color: #FF8C00;
+  display: block;
+  margin-top: 12rpx;
+  font-weight: 500;
+  background: #FFF7E6;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+/* ===== 操作按钮 ===== */
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.popup-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28rpx;
+  border-radius: 999rpx;
+  font-size: 36rpx;
+  font-weight: 600;
+  transition: all 0.3s;
+  min-height: 96rpx;
+}
+
+.popup-btn:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.popup-btn-icon {
+  font-size: 40rpx;
+  margin-right: 12rpx;
+}
+
+.popup-btn-text {
+  font-size: 36rpx;
+}
+
+/* 确认服药 - 最大最醒目 */
+.popup-btn.primary {
+  background: linear-gradient(135deg, #52C41A, #73D13D);
+  color: #FFFFFF;
+  box-shadow: 0 8rpx 30rpx rgba(82, 196, 26, 0.4);
+  min-height: 110rpx;
+}
+
+.popup-btn.primary .popup-btn-text {
+  font-size: 42rpx;
+}
+
+/* 跳过 */
+.popup-btn.skip {
+  background: #FFF2F0;
+  color: #FF4D4F;
+  border: 3rpx solid #FFCCC7;
+}
+
+/* 稍后提醒 */
+.popup-btn.later {
+  background: transparent;
+  color: #999999;
+  min-height: 72rpx;
+}

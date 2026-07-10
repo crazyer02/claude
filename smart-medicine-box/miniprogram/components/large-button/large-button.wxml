@@ -1,0 +1,10 @@
+<!-- large-button 大按钮组件 -->
+<view
+  class="btn {{typeClass}} {{disabled || loading ? 'btn-disabled' : ''}}"
+  style="{{customStyle}}"
+  bindtap="onTap"
+>
+  <text wx:if="{{icon && !loading}}" class="btn-icon">{{icon}}</text>
+  <text wx:if="{{loading}}" class="btn-loading">⏳</text>
+  <text class="btn-text">{{loading ? '处理中...' : text}}</text>
+</view>

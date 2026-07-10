@@ -1,0 +1,125 @@
+/* 日期导航 */
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md) 0;
+}
+
+.date-arrow {
+  font-size: var(--font-xl);
+  color: var(--primary);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.date-display {
+  display: flex;
+  align-items: center;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--bg-card);
+  border-radius: var(--radius-round);
+  box-shadow: var(--shadow-card);
+}
+
+.date-text {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin-right: var(--space-sm);
+}
+
+.date-arrow-down {
+  font-size: var(--font-xs);
+  color: var(--text-hint);
+}
+
+/* 状态筛选 */
+.status-filter {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.filter-item {
+  flex: 1;
+  text-align: center;
+  padding: var(--space-sm);
+  border-radius: var(--radius-round);
+  font-size: var(--font-md);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+}
+
+.filter-item.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* 记录列表 */
+.record-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-sm);
+  box-shadow: var(--shadow-card);
+}
+
+.record-left {
+  flex: 1;
+}
+
+.record-medicine {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+
+.record-dosage {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  display: block;
+  margin-top: 4rpx;
+}
+
+.record-time {
+  font-size: var(--font-sm);
+  color: var(--text-hint);
+  margin-top: 4rpx;
+}
+
+.record-actual {
+  font-size: var(--font-sm);
+  color: var(--warning);
+  margin-top: 2rpx;
+}
+
+.record-right {
+  min-width: 130rpx;
+  text-align: right;
+}
+
+.status-tag {
+  font-size: var(--font-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-round);
+  font-weight: 500;
+}
+
+.status-tag.taken {
+  background: #F6FFED;
+  color: var(--success);
+}
+
+.status-tag.missed {
+  background: #FFF2F0;
+  color: var(--danger);
+}
+
+.status-tag.skipped {
+  background: #FFFBE6;
+  color: var(--warning);
+}
